@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tests for jshunit</title>
+    <script src="jshunit.js"></script>
+    <script src="jshunit-tests.js"></script>
+    <script type="text/javascript">
+        setTimeout(function() {
+            document.getElementById("debug").innerHTML = "Generated: " + new Date().toLocaleTimeString();
+        });
+    </script>
+</head>
+<body style="background: #FFFFCC">
+<h1>JS:h:unit test tester</h1>
+
+<div id="test-output">
+
+</div>
+
+<hr/>
+<div id="debug"/>
+
+</body>
+
+<script type="text/javascript">
+    setTimeout(function() {
+        var output = document.getElementById("test-output");
+        console.log(JSHUnit.results);
+        output.innerHTML = printRecursive(JSHUnit.results);
+
+        function printRecursive(results) {
+            if (!results.length)
+                return '';
+
+            var str = '<ul>';
+            results.forEach(function(result, i) {
+                str += '<li>{name}{children}</li>'
+                        .replace('{name}', result.name)
+                        .replace('{children}', printRecursive(result.children));
+            });
+            str += '</ul>';
+            return str;
+        }
+    }, 200);
+
+</script>
+</html>
