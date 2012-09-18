@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Tests for jshunit</title>
-    <script src="jshunit.js"></script>
-    <script src="jshunit-tests.js"></script>
+    <title>Tests for Basil</title>
+    <script src="chai.js"></script>
+    <script src="basil.js"></script>
     <script type="text/javascript">
         setTimeout(function() {
             document.getElementById("debug").innerHTML = "Generated: " + new Date().toLocaleTimeString();
-        });
+        }, 50);
     </script>
+
+    <script src="basil-tests.js"></script>
 </head>
 <body style="background: #FFFFCC">
-<h1>JS:h:unit test tester</h1>
+<h1>Tests for Basil</h1>
 
 <div id="test-output">
 
@@ -25,8 +27,8 @@
 <script type="text/javascript">
     setTimeout(function() {
         var output = document.getElementById("test-output");
-        console.log(JSHUnit.results);
-        output.innerHTML = printRecursive(JSHUnit.results);
+        console.log(Basil.results);
+        output.innerHTML = printRecursive(Basil.results);
 
         function printRecursive(results) {
             if (!results.length)
