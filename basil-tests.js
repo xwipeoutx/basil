@@ -28,7 +28,7 @@ var expect = chai.expect;
             function testFunction() {}
         });
 
-        when("a single passing inner test", function() {
+        when("1 passing inner test", function() {
             context.run(function() {
                 _.when("Inner Name", function() {});
             });
@@ -44,7 +44,7 @@ var expect = chai.expect;
             });
         });
 
-        when("multiple passing inner tests", function() {
+        when("2 passing inner tests", function() {
             var firstInnerRunCount = 0,
                 secondInnerRunCount = 0;
             var testFunction = function() {
@@ -92,12 +92,43 @@ var expect = chai.expect;
                     it("completed the second inner function", function() {
                         expect(child2.isComplete()).to.be.true;
                     });
+
+                    it("reused the second child context", function() {
+                        expect(context.children[1]).to.equal(child2);
+                    });
                 });
             });
         });
 
-        when("throws", function() {
+        when("3 passing inner tests", function() {
+            var firstInnerRunCount = 0,
+                secondInnerRunCount = 0,
+                thirdInnerRunCount = 0;
+            var testFunction = function() {
+                _.when("First Inner", function() {firstInnerRunCount++});
+                _.when("Second Inner", function() {secondInnerRunCount++});
+                _.when("Third Inner", function() {thirdInnerRunCount++});
+            };
 
+            when("running 3 times", function() {
+                context.run(testFunction);
+                context.run(testFunction);
+                context.run(testFunction);
+
+                it("completed", function() {
+                   expect(context.isComplete()).to.be.true;
+                });
+
+                it("ran the first inner test function once", function() {
+                    expect(firstInnerRunCount).to.equal(1);
+                });
+                it("ran the second inner test function once", function() {
+                    expect(secondInnerRunCount).to.equal(1);
+                });
+                it("ran the third inner test function once", function() {
+                    expect(thirdInnerRunCount).to.equal(1);
+                });
+            });
         });
     });
 
