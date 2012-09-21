@@ -33,7 +33,8 @@
         }
     }
 
-    function Context(name, parent) {
+    function Context(global, name, parent) {
+        this._global = global;
         this.name = name;
         this.parent = parent;
         this.children = [];
@@ -52,7 +53,7 @@
 
         run: function(fn) {
             if (this._isComplete)
-                throw "Cannot run a complete test";
+                throw new TestAlreadyCompleteError("Cannot run a complete test");
 
             var insideBit = new NestedTest(this._childContext.bind(this));
 
@@ -68,8 +69,8 @@
 
         _overwriteGlobals: function(nestFunction) {
             return Basil.nestFunctions.map(function(fnName) {
-                var oldFunction = global[fnName];
-                global[fnName] = nestFunction.bind(this);
+                var oldFunction = this._global[fnName];
+                this._global[fnName] = nestFunction.bind(this);
 
                 return {
                     name: fnName,
@@ -80,25 +81,28 @@
 
         _restoreGlobals: function(oldFunctions) {
             oldFunctions.forEach(function(fnDef) {
-                global[fnDef.name] = fnDef.oldFunction;
-            });
+                this._global[fnDef.name] = fnDef.oldFunction;
+            }, this);
         },
 
         _childContext: function(index, name) {
             var context = this.children[index];
             if (!context) {
-                context = new Context(name, this);
+                context = new Context(this._global, name, this);
                 this.children.push(context);
             }
             return context;
         }
     };
 
+    function TestAlreadyCompleteError(message) { this.message = message; }
+
     var results = [];
 
     var Basil = global.Basil = {
         NestedTest: NestedTest,
         Context: Context,
+        TestAlreadyCompleteError: TestAlreadyCompleteError,
         results: results,
         nestFunctions: ['when', 'it']
     };
@@ -108,7 +112,7 @@
     function describe(name, fn) {
         global.describe = null;
 
-        var context = new Context(name, null);
+        var context = new Context(global, name, null);
         results.push(context);
 
         var maxRuns = 73;
@@ -122,18 +126,5 @@
             throw "Infinite Loop";
 
         global.describe = describe;
-    }
-
-    function describeWithWait(name, fn) {
-        whenReady(function() {
-            describe(name, fn);
-        });
-    }
-
-    function whenReady(fn) {
-        if (document.body)
-            fn();
-        else
-            setTimeout(fn, 0);
     }
 })(this);

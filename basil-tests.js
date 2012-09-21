@@ -1,40 +1,105 @@
 var expect = chai.expect;
 (function() {
 
-    if (1)
-        (function() {
-            describe("Nested Test", function() {
-                var childContext = {
-                    run: function(fn) {
-                        this.fn = fn;
-                        return this.shouldRunAgain;
-                    }};
-                var childContextProvider = function(index, name) {
-                    return childContext;
-                }
+    describe("Context", function() {
+        var _ = {};
 
-                var nestedTest = new Basil.NestedTest(childContextProvider);
+        var context = new Basil.Context(_, "Test Context", null);
 
-                when("no nested functions have been called", function() {
-                    it("is complete", function() {
-                        expect(nestedTest.isComplete()).to.equal(true);
-                    });
+        it("gets name from constructor", function() {
+            expect(context.name).to.equal("Test Context");
+        });
+
+        when("no inner tests", function() {
+            context.run(testFunction);
+
+            it("completed", function() {
+                expect(context.isComplete()).to.be.true;
+            });
+
+            when("running a second time", function() {
+                it("throws an exception", function() {
+                    expect(function() {
+                        context.run(testFunction)
+                    }).to.throw(Basil.TestAlreadyCompleteError);
+                });
+            });
+
+            function testFunction() {}
+        });
+
+        when("a single passing inner test", function() {
+            context.run(function() {
+                _.when("Inner Name", function() {});
+            });
+
+            it("completed", function() {
+                expect(context.isComplete()).to.be.true;
+            });
+
+            it("has a set up and completed child", function() {
+                var child = context.children[0];
+                expect(child.isComplete()).to.be.true;
+                expect(child.name).to.equal("Inner Name");
+            });
+        });
+
+        when("multiple passing inner tests", function() {
+            var firstInnerRunCount = 0,
+                secondInnerRunCount = 0;
+            var testFunction = function() {
+                _.when("First Inner", function() {firstInnerRunCount++});
+                _.when("Second Inner", function() {secondInnerRunCount++});
+            };
+
+            when("run once", function() {
+                context.run(testFunction);
+
+                it("is not completed", function() {
+                    expect(context.isComplete()).to.be.false;
                 });
 
-                when("single nested function is already complete", function() {
-                    childContext.isComplete = true;
-                    var innerName = "Nested Name";
-                    var innerFunction = function() {}
+                it("ran the first inner test function", function() {
+                    expect(firstInnerRunCount).to.equal(1);
+                });
+                it("did not run the second inner test function", function() {
+                    expect(secondInnerRunCount).to.equal(0);
+                });
 
-                    nestedTest.execute(innerName, innerFunction);
-                    it("is not complete", function() {
-                        expect(nestedTest.isComplete()).to.equal(false);
+                var child1 = context.children[0];
+                var child2 = context.children[1];
+                it("has 2 children, only 1 of which is complete", function() {
+                    expect(context.children.length).to.equal(2);
+                    expect(child1.isComplete()).to.be.true;
+                    expect(child2.isComplete()).to.be.false;
+                });
+
+                when("run again", function() {
+                    context.run(testFunction);
+
+                    it("completed", function() {
+                        expect(context.isComplete()).to.be.true;
+                    });
+
+                    it("did not rerun the first inner test function", function() {
+                        expect(firstInnerRunCount).to.equal(1);
+                    });
+
+                    it("ran the second inner test function", function() {
+                        expect(secondInnerRunCount).to.equal(1);
+                    });
+
+                    it("completed the second inner function", function() {
+                        expect(child2.isComplete()).to.be.true;
                     });
                 });
             });
-            return;
+        });
 
-        })();
+        when("throws", function() {
+
+        });
+    });
 
     return;
 
