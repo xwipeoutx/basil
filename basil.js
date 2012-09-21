@@ -60,11 +60,15 @@
             var oldFunctions = this._overwriteGlobals(insideBit.execute.bind(insideBit));
             try {
                 fn.call(this);
+            } catch(ex) {
+                this.passed = false;
             } finally {
                 this._restoreGlobals(oldFunctions);
             }
 
             this._isComplete = insideBit.isComplete();
+            if (this._isComplete)
+                this.passed = this.passed !== false && this.children.every(function(c) { return c.passed; });
         },
 
         _overwriteGlobals: function(nestFunction) {

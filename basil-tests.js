@@ -1,4 +1,5 @@
 var expect = chai.expect;
+var ignore = function(){};
 (function() {
 
     describe("Context", function() {
@@ -10,11 +11,19 @@ var expect = chai.expect;
             expect(context.name).to.equal("Test Context");
         });
 
+        it("gets global from constructor", function() {
+            expect(context._global).to.equal(_);
+        });
+
         when("no inner tests", function() {
             context.run(testFunction);
 
             it("completed", function() {
                 expect(context.isComplete()).to.be.true;
+            });
+
+            it("passed", function() {
+                expect(context.passed).to.be.true;
             });
 
             when("running a second time", function() {
@@ -25,7 +34,7 @@ var expect = chai.expect;
                 });
             });
 
-            function testFunction() {}
+            function testFunction () {}
         });
 
         when("1 passing inner test", function() {
@@ -35,6 +44,10 @@ var expect = chai.expect;
 
             it("completed", function() {
                 expect(context.isComplete()).to.be.true;
+            });
+
+            it("passed", function() {
+                expect(context.passed).to.be.true;
             });
 
             it("has a set up and completed child", function() {
@@ -58,6 +71,9 @@ var expect = chai.expect;
                 it("is not completed", function() {
                     expect(context.isComplete()).to.be.false;
                 });
+                it("does not know if passed", function() {
+                    expect(context.passed).to.be.undefined;
+                });
 
                 it("ran the first inner test function", function() {
                     expect(firstInnerRunCount).to.equal(1);
@@ -79,6 +95,10 @@ var expect = chai.expect;
 
                     it("completed", function() {
                         expect(context.isComplete()).to.be.true;
+                    });
+
+                    it("passed", function() {
+                        expect(context.passed).to.be.true;
                     });
 
                     it("did not rerun the first inner test function", function() {
@@ -105,9 +125,9 @@ var expect = chai.expect;
                 secondInnerRunCount = 0,
                 thirdInnerRunCount = 0;
             var testFunction = function() {
-                _.when("First Inner", function() {firstInnerRunCount++});
-                _.when("Second Inner", function() {secondInnerRunCount++});
-                _.when("Third Inner", function() {thirdInnerRunCount++});
+                _.when("First Inner", function() {firstInnerRunCount++;});
+                _.when("Second Inner", function() {secondInnerRunCount++;});
+                _.when("Third Inner", function() {thirdInnerRunCount++;});
             };
 
             when("running 3 times", function() {
@@ -116,7 +136,7 @@ var expect = chai.expect;
                 context.run(testFunction);
 
                 it("completed", function() {
-                   expect(context.isComplete()).to.be.true;
+                    expect(context.isComplete()).to.be.true;
                 });
 
                 it("ran the first inner test function once", function() {
@@ -129,6 +149,92 @@ var expect = chai.expect;
                     expect(thirdInnerRunCount).to.equal(1);
                 });
             });
+        });
+
+        when("context throws", function() {
+            context.run(function() { throw "an error"; });
+
+            it("is complete", function() {
+                expect(context.isComplete()).to.be.true;
+            });
+
+            it("does not pass", function() {
+                expect(context.passed).to.be.false;
+            });
+        });
+
+        when("single inner throws", function() {
+            context.run(function() {
+                _.when("inner throwing", function() { throw "an Error"});
+            });
+
+            it("is complete", function() {
+                expect(context.isComplete()).to.be.true;
+            });
+
+            it("does not pass", function() {
+                expect(context.passed).to.be.false;
+            });
+        });
+
+        when("first inner of 2 throws", function() {
+            when("run the first time", function() {
+                context.run(testFunction);
+
+                it("is not complete", function() {
+                    expect(context.isComplete()).to.be.false;
+                });
+
+                it("has a non passing child", function() {
+                    expect(context.children[0].passed).to.be.false;
+                });
+
+                when("run a second time", function() {
+                    context.run(testFunction);
+
+                    it("is complete", function() {
+                        expect(context.isComplete()).to.be.true;
+                    });
+
+                    it("has not passed", function() {
+                        expect(context.passed).to.be.false;
+                    });
+
+                    it("has a passing child", function() {
+                        expect(context.children[1].passed).to.be.true;
+                    });
+                });
+            });
+            function testFunction () {
+                _.when("inner throwing", function() { throw "an Error"});
+                _.when("inner not throwing", function() { });
+            }
+        });
+
+        when("second inner of 2 throws", function() {
+            context.run(testFunction);
+            context.run(testFunction);
+
+            it("is complete", function() {
+                expect(context.isComplete()).to.be.true;
+            });
+
+            it("has not passed", function() {
+                expect(context.passed).to.be.false;
+            });
+
+            it("has a passing first child", function() {
+                expect(context.children[0].passed).to.be.true;
+            });
+
+            it("has a failing second child", function() {
+                expect(context.children[1].passed).to.be.false;
+            });
+
+            function testFunction () {
+                _.when("inner not throwing", function() { });
+                _.when("inner throwing", function() { throw "an Error"});
+            }
         });
     });
 

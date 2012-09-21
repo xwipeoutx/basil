@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Tests for Basil</title>
     <script src="chai.js"></script>
     <script src="basil.js"></script>
@@ -9,6 +10,16 @@
             document.getElementById("debug").innerHTML = "Generated: " + new Date().toLocaleTimeString();
         }, 50);
     </script>
+
+    <style>
+        li { list-style: none; }
+        li.pass { color: #005500; }
+        li.pass:before { content: '✓ '; }
+        li.fail { color: #880000; }
+        li.fail:before { content: '✗ '; }
+        li.not-run { color: #555500; }
+        li.not-run:before { content: '∅ '; }
+    </style>
 
     <script src="basil-tests.js"></script>
 </head>
@@ -36,8 +47,9 @@
 
             var str = '<ul>';
             results.forEach(function(result, i) {
-                str += '<li>{name}{children}</li>'
+                str += '<li class="{class}">{name} {children}</li>'
                         .replace('{name}', result.name)
+                        .replace('{class}', result.passed === true ? 'pass' : result.passed == false ? 'fail' : 'not-run')
                         .replace('{children}', printRecursive(result.children));
             });
             str += '</ul>';
