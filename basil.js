@@ -17,10 +17,14 @@
                 return;
             }
 
+            if (context.isComplete())
+                return;
+
+            context.run(fn);
+            this._hasRun = true;
+
             if (!context.isComplete()) {
-                context.run(fn);
-                this._isComplete = true;
-                this._hasRun = true;
+                this._isComplete = false;
             }
         },
 
@@ -44,7 +48,12 @@
             return this.parent.parents().concat(this.parent);
         },
 
+        isComplete: function() { return this._isComplete;},
+
         run: function(fn) {
+            if (this._isComplete)
+                throw "Cannot run a complete test";
+
             var insideBit = new NestedTest(this._childContext.bind(this));
 
             var oldFunctions = this._overwriteGlobals(insideBit.execute.bind(insideBit));
@@ -82,17 +91,13 @@
                 this.children.push(context);
             }
             return context;
-        },
-
-        isComplete: function() {
-            return this._isComplete;
         }
     };
 
     var results = [];
 
     var Basil = global.Basil = {
-        InsideBit: NestedTest,
+        NestedTest: NestedTest,
         Context: Context,
         results: results,
         nestFunctions: ['when', 'it']
@@ -108,10 +113,12 @@
 
         var maxRuns = 73;
 
-        while (maxRuns-- && !context.isComplete())
+        while (maxRuns && !context.isComplete()) {
             context.run(fn);
+            maxRuns--;
+        }
 
-        if (maxRuns <=0)
+        if (maxRuns <= 0)
             throw "Infinite Loop";
 
         global.describe = describe;

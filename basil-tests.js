@@ -1,5 +1,43 @@
 var expect = chai.expect;
 (function() {
+
+    if (1)
+        (function() {
+            describe("Nested Test", function() {
+                var childContext = {
+                    run: function(fn) {
+                        this.fn = fn;
+                        return this.shouldRunAgain;
+                    }};
+                var childContextProvider = function(index, name) {
+                    return childContext;
+                }
+
+                var nestedTest = new Basil.NestedTest(childContextProvider);
+
+                when("no nested functions have been called", function() {
+                    it("is complete", function() {
+                        expect(nestedTest.isComplete()).to.equal(true);
+                    });
+                });
+
+                when("single nested function is already complete", function() {
+                    childContext.isComplete = true;
+                    var innerName = "Nested Name";
+                    var innerFunction = function() {}
+
+                    nestedTest.execute(innerName, innerFunction);
+                    it("is not complete", function() {
+                        expect(nestedTest.isComplete()).to.equal(false);
+                    });
+                });
+            });
+            return;
+
+        })();
+
+    return;
+
     var it1RunCount = 0;
     var describeRunCount = 0;
     describe("it running in isolation", function() {
@@ -19,13 +57,16 @@ var expect = chai.expect;
         });
         expect(it1RunCount).to.equal(1);
 
+        if (describeRunCount == 2)
+            expect(it2HasRun).to.equal(true);
+
     });
     expect(describeRunCount).to.equal(2);
 
     it1RunCount = 0;
     var describeRunCount = 0
     describe("nesting", function() {
-        when("execute", function() {
+        when("nesting 2", function() {
             var it1HasRun = false;
             var it2HasRun = false;
             describeRunCount++;
@@ -44,10 +85,16 @@ var expect = chai.expect;
 
             it("it 3", function() {
             });
+
+            when('nesting 3', function() {
+                it("foo", function() {
+
+                });
+            });
         });
     });
 
-    describe("it running in isolation", function() {
+    describe("no implementations", function() {
         it("foo", function() {});
         it("bar", function() {});
         it("baz", function() {});
