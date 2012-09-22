@@ -1,7 +1,6 @@
-var expect = chai.expect;
-var ignore = function() {};
-chai.Assertion.includeStack = true;
 (function() {
+    var expect = chai.expect;
+
     describe("Context", function() {
         var _ = {};
 
@@ -170,7 +169,7 @@ chai.Assertion.includeStack = true;
                 expect(context.failingFunction).to.equal(testFunction);
             });
 
-            function testFunction() {
+            function testFunction () {
                 throw new Error("Foo");
             }
         });

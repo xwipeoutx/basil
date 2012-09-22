@@ -116,13 +116,11 @@
 
     function TestAlreadyCompleteError (message) { this.message = message; }
 
-    var results = [];
 
     var Basil = global.Basil = {
         NestedTest: NestedTest,
         Context: Context,
         TestAlreadyCompleteError: TestAlreadyCompleteError,
-        results: results,
         nestFunctions: ['when', 'it']
     };
 
@@ -131,20 +129,13 @@
     function describe (name, fn) {
         global.describe = null;
 
-        var context = new Context(global, name, null);
-        results.push(context);
+        var context = new Basil.Context(global, name, null);
 
-        var maxRuns = 73;
-
-        while (maxRuns && !context.isComplete()) {
+        while (!context.isComplete())
             context.run(fn);
-            maxRuns--;
-        }
         context.clean();
 
-        if (maxRuns <= 0)
-            throw "Infinite Loop";
-
         global.describe = describe;
+        return context;
     }
 })(this);

@@ -3,25 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <title>Tests for Basil</title>
-    <script src="chai.js"></script>
     <script src="../basil.js"></script>
-    <script type="text/javascript">
-        setTimeout(function() {
-            document.getElementById("debug").innerHTML = "Generated: " + new Date().toLocaleTimeString();
-        }, 50);
-    </script>
+    <script src="../basil-browser-runner.js"></script>
+
+    <script src="chai.js"></script>
+    <script src="basil-tests.js"></script>
 
     <style>
-        li { list-style: none; }
-        li.pass { color: #005500; }
-        li.pass:before { content: '✓ '; }
-        li.fail { color: #880000; }
-        li.fail:before { content: '✗ '; }
-        li.not-run { color: #555500; }
-        li.not-run:before { content: '∅ '; }
+        li {
+            list-style: none;
+        }
+
+        li.pass {
+            color: #005500;
+        }
+
+        li.pass:before {
+            content: '✓ ';
+        }
+
+        li.fail {
+            color: #880000;
+        }
+
+        li.fail:before {
+            content: '✗ ';
+        }
+
+        li.not-run {
+            color: #555500;
+        }
+
+        li.not-run:before {
+            content: '∅ ';
+        }
+        a.basil-inspect {
+            text-decoration: none;
+            font-size: small;
+        }
     </style>
 
-    <script src="basil-tests.js"></script>
 </head>
 <body style="background: #FFFFCC">
 <h1>Tests for Basil</h1>
@@ -34,29 +55,4 @@
 <div id="debug"/>
 
 </body>
-
-<script type="text/javascript">
-    setTimeout(function() {
-        var output = document.getElementById("test-output");
-        console.log(Basil.results);
-        output.innerHTML = printRecursive(Basil.results);
-
-        function printRecursive(results) {
-            if (!results.length)
-                return '';
-
-            var str = '<ul>';
-            results.forEach(function(result, i) {
-                str += '<li class="{class}">{name} {error} {children}</li>'
-                        .replace('{name}', result.name)
-                        .replace('{class}', result.passed === true ? 'pass' : result.passed == false ? 'fail' : 'not-run')
-                        .replace('{error}', result.error ? '(' + result.error.toString() + ')' : '')
-                        .replace('{children}', printRecursive(result.children));
-            });
-            str += '</ul>';
-            return str;
-        }
-    }, 0);
-
-</script>
 </html>
