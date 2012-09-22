@@ -1,5 +1,5 @@
 (function(global) {
-    function NestedTest(childContextProvider) {
+    function NestedTest (childContextProvider) {
         this._childContextProvider = childContextProvider;
 
         this._childContextIndex = 0;
@@ -33,7 +33,7 @@
         }
     }
 
-    function Context(global, name, parent) {
+    function Context (global, name, parent) {
         this._global = global;
         this.name = name;
         this.parent = parent;
@@ -60,8 +60,12 @@
             var oldFunctions = this._overwriteGlobals(insideBit.execute.bind(insideBit));
             try {
                 fn.call(this);
-            } catch(ex) {
+            } catch (ex) {
+                if (!(ex instanceof Error))
+                    throw ex;
+
                 this.passed = false;
+
             } finally {
                 this._restoreGlobals(oldFunctions);
             }
@@ -96,10 +100,16 @@
                 this.children.push(context);
             }
             return context;
+        },
+
+        clean: function() {
+            delete this._global;
+            delete this._isComplete;
+            this.children.forEach(function(child) { child.clean(); });
         }
     };
 
-    function TestAlreadyCompleteError(message) { this.message = message; }
+    function TestAlreadyCompleteError (message) { this.message = message; }
 
     var results = [];
 
@@ -113,7 +123,7 @@
 
     global.describe = describe;
 
-    function describe(name, fn) {
+    function describe (name, fn) {
         global.describe = null;
 
         var context = new Context(global, name, null);
@@ -125,6 +135,7 @@
             context.run(fn);
             maxRuns--;
         }
+        context.clean();
 
         if (maxRuns <= 0)
             throw "Infinite Loop";
