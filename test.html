@@ -47,15 +47,17 @@
 
             var str = '<ul>';
             results.forEach(function(result, i) {
-                str += '<li class="{class}">{name} {children}</li>'
+                if (result.error) debugger;
+                str += '<li class="{class}">{name} {error} {children}</li>'
                         .replace('{name}', result.name)
                         .replace('{class}', result.passed === true ? 'pass' : result.passed == false ? 'fail' : 'not-run')
+                        .replace('{error}', result.error ? '<pre>(' + result.error.toString() + ') @ ' + result.stack +"\n\n"+ result.error.stack + '</pre>' : '')
                         .replace('{children}', printRecursive(result.children));
             });
             str += '</ul>';
             return str;
         }
-    }, 200);
+    }, 0);
 
 </script>
 </html>

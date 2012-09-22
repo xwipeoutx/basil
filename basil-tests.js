@@ -1,7 +1,7 @@
 var expect = chai.expect;
-var ignore = function(){};
+var ignore = function() {};
+chai.Assertion.includeStack = true;
 (function() {
-
     describe("Context", function() {
         var _ = {};
 
@@ -152,7 +152,9 @@ var ignore = function(){};
         });
 
         when("context throws", function() {
-            context.run(function() { throw new Error("Foo"); });
+            context.run(function() {
+                throw new Error("Foo");
+            });
 
             it("is complete", function() {
                 expect(context.isComplete()).to.be.true;
@@ -160,6 +162,10 @@ var ignore = function(){};
 
             it("does not pass", function() {
                 expect(context.passed).to.be.false;
+            });
+
+            it("has error details", function() {
+                expect(context.error.message).to.equal("Foo");
             });
         });
 
@@ -235,6 +241,12 @@ var ignore = function(){};
                 _.when("inner not throwing", function() { });
                 _.when("inner throwing", function() { throw new Error("an Error")});
             }
+        });
+
+        it("rethrows non-Error exceptions", function() {
+            expect(function() {
+                context.run(function() { throw "Not a good error"});
+            }).to.throw();
         });
     });
 })();

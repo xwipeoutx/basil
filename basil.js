@@ -60,12 +60,12 @@
             var oldFunctions = this._overwriteGlobals(insideBit.execute.bind(insideBit));
             try {
                 fn.call(this);
-            } catch (ex) {
-                if (!(ex instanceof Error))
-                    throw ex;
+            } catch (error) {
+                if (!(error instanceof Error))
+                    throw error;
 
                 this.passed = false;
-
+                this.error = error;
             } finally {
                 this._restoreGlobals(oldFunctions);
             }
