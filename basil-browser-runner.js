@@ -42,6 +42,16 @@
             li.context = context;
             li.innerHTML = caption;
 
+            li.addEventListener('click', function(event) {
+                if (event.target != li)
+                    return;
+                if (this.getAttribute('class').indexOf('expanded') == -1)
+                    li.setAttribute('class', cssClass + ' expanded');
+                else
+                    li.setAttribute('class', cssClass);
+            });
+
+
             if (context.failingFunction)
                 addInspectionLink(li, context);
 
@@ -69,9 +79,12 @@
         }
 
         function getCssClass (context) {
-            return context.passed === true ? 'pass'
+            var cssClass = context.passed === true ? 'pass'
                 : context.passed === false ? 'fail'
                 : 'not-run';
+            if (context.children.length)
+                cssClass += ' has-children';
+            return cssClass;
         }
 
         function getCaption (context) {

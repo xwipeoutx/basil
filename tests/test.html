@@ -10,11 +10,24 @@
     <script src="basil-tests.js"></script>
 
     <style>
+        #basil-test-output > ul > li,
+        li.expanded > ul > li {
+            display: block;
+        }
+
         li {
             list-style: none;
         }
 
+        li.has-children:hover {
+            cursor: pointer;
+        }
+        li.has-children ul{
+            cursor: default;
+        }
+
         li.pass {
+            display: none;
             color: #005500;
         }
 
