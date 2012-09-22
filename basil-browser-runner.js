@@ -15,7 +15,7 @@
     function logResults (context) {
         console.log(context);
 
-        var destinationElement = document.getElementById("test-output");
+        var destinationElement = getOrCreateDestinationElement();
 
         appendDomElements(destinationElement, [context]);
 
