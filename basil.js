@@ -51,6 +51,10 @@
 
         isComplete: function() { return this._isComplete;},
 
+        fullName: function() {
+            return this.name + ' ' + (this.parent ? this.parent.fullName() : '');
+        },
+
         run: function(fn) {
             if (this._isComplete)
                 throw new TestAlreadyCompleteError("Cannot run a complete test");
@@ -115,7 +119,6 @@
     };
 
     function TestAlreadyCompleteError (message) { this.message = message; }
-
 
     var Basil = global.Basil = {
         NestedTest: NestedTest,
