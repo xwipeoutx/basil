@@ -152,9 +152,7 @@ chai.Assertion.includeStack = true;
         });
 
         when("context throws", function() {
-            context.run(function() {
-                throw new Error("Foo");
-            });
+            context.run(testFunction);
 
             it("is complete", function() {
                 expect(context.isComplete()).to.be.true;
@@ -167,6 +165,14 @@ chai.Assertion.includeStack = true;
             it("has error details", function() {
                 expect(context.error.message).to.equal("Foo");
             });
+
+            it("holds on to test function", function() {
+                expect(context.failingFunction).to.equal(testFunction);
+            });
+
+            function testFunction() {
+                throw new Error("Foo");
+            }
         });
 
         when("single inner throws", function() {

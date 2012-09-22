@@ -55,24 +55,29 @@
             if (this._isComplete)
                 throw new TestAlreadyCompleteError("Cannot run a complete test");
 
-            var insideBit = new NestedTest(this._childContext.bind(this));
+            var nestedTest = new NestedTest(this._childContext.bind(this));
 
-            var oldFunctions = this._overwriteGlobals(insideBit.execute.bind(insideBit));
+            var oldFunctions = this._overwriteGlobals(nestedTest.execute.bind(nestedTest));
             try {
                 fn.call(this);
             } catch (error) {
-                if (!(error instanceof Error))
-                    throw error;
-
-                this.passed = false;
-                this.error = error;
+                this._captureError(error, fn);
             } finally {
                 this._restoreGlobals(oldFunctions);
             }
 
-            this._isComplete = insideBit.isComplete();
+            this._isComplete = nestedTest.isComplete();
             if (this._isComplete)
                 this.passed = this.passed !== false && this.children.every(function(c) { return c.passed; });
+        },
+
+        _captureError: function(error, fn) {
+            if (!(error instanceof Error))
+                throw error;
+
+            this.passed = false;
+            this.error = error;
+            this.failingFunction = fn;
         },
 
         _overwriteGlobals: function(nestFunction) {

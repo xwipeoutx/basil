@@ -47,11 +47,10 @@
 
             var str = '<ul>';
             results.forEach(function(result, i) {
-                if (result.error) debugger;
                 str += '<li class="{class}">{name} {error} {children}</li>'
                         .replace('{name}', result.name)
                         .replace('{class}', result.passed === true ? 'pass' : result.passed == false ? 'fail' : 'not-run')
-                        .replace('{error}', result.error ? '<pre>(' + result.error.toString() + ') @ ' + result.stack +"\n\n"+ result.error.stack + '</pre>' : '')
+                        .replace('{error}', result.error ? '(' + result.error.toString() + ')' : '')
                         .replace('{children}', printRecursive(result.children));
             });
             str += '</ul>';
