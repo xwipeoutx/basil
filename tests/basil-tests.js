@@ -18,7 +18,7 @@
             context.run(testFunction);
 
             it("completed", function() {
-                expect(context.isComplete()).to.be.false;
+                expect(context.isComplete()).to.be.true;
             });
 
             it("passed", function() {

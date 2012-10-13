@@ -2,6 +2,8 @@
     var oldDescribe = global.describe;
     global.describe = describe;
     var localStorage = global.localStorage || {};
+    var isSetup = false;
+    var destinationElement;
 
     function describe (name, fn) {
         if (!document.body) {
@@ -9,12 +11,20 @@
             return;
         }
 
-        var context = oldDescribe(name, fn);
+        if (!isSetup) {
+            isSetup = true;
+            destinationElement = setup();
+        }
 
+        var context = oldDescribe(name, fn);
+        appendResultElements(destinationElement, [context]);
+    }
+
+    function setup() {
         var destinationElement = getOrCreateDestinationElement();
         appendHidePassed(destinationElement);
+        return destinationElement;
 
-        appendResultElements(destinationElement, [context]);
     }
 
     function appendHidePassed(el) {
@@ -104,11 +114,11 @@
         li.appendChild(a);
     }
 
-    function addInspectListener (a, inspect) {
+    function addInspectListener (a, stepInHere) {
         a.addEventListener('click', function(event) {
             event.preventDefault();
             debugger;
-            inspect();
+            stepInHere();
         });
     }
 
@@ -116,8 +126,9 @@
         var cssClass = context.passed === true ? 'pass'
             : context.passed === false ? 'fail'
             : 'not-run';
-        if (context.children.length)
-            cssClass += ' has-children';
+
+        cssClass += context.children.length ? ' parent' : ' leaf';
+
         if (isCollapsed(context))
             cssClass += ' collapsed';
         return cssClass;
