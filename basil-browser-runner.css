@@ -46,7 +46,6 @@ li {
 .leaf.pass {
     color: #009900;
 }
-
 .pass:before {
     content: '✓ ';
     color: #009900;
@@ -59,7 +58,6 @@ li {
 .leaf.fail {
     color: #990000;
 }
-
 .fail:before {
     content: '✗ ';
 }
@@ -68,11 +66,9 @@ li {
 .not-run {
     color: #555500;
 }
-
 .not-run:before {
     content: '∅ ';
 }
-
 a.basil-inspect {
     text-decoration: none;
     font-size: small;
