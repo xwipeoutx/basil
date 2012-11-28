@@ -16,15 +16,49 @@
             destinationElement = setup();
         }
 
+        var filter = param('filter');
+        if (filter && name.indexOf(filter) == -1)
+            return;
+
         var context = oldDescribe(name, fn);
         appendResultElements(destinationElement, [context]);
     }
 
+    function param(key) {
+        var query = window.location.search.substring(1);
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+            var pair = vars[i].split('=');
+            if (decodeURIComponent(pair[0]) == key) {
+                return decodeURIComponent(pair[1]);
+            }
+        }
+    }
+
     function setup() {
         var destinationElement = getOrCreateDestinationElement();
+        appendFilterForm(destinationElement);
         appendHidePassed(destinationElement);
         return destinationElement;
 
+    }
+
+    function appendFilterForm(el) {
+        var form = document.createElement('form');
+        form.setAttribute('method', 'get');
+        form.setAttribute('action', document.location.href);
+        form.style.display = 'inline-block';
+
+        var filterTextbox = document.createElement('input');
+        filterTextbox.setAttribute('type', 'text');
+        filterTextbox.setAttribute('id', 'basil-filter-textbox');
+        filterTextbox.setAttribute('name', 'filter');
+        filterTextbox.setAttribute('value', param('filter'));
+
+        form.appendChild(filterTextbox);
+        el.appendChild(form);
+
+        filterTextbox.focus();
     }
 
     function appendHidePassed(el) {
