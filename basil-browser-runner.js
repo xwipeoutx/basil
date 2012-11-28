@@ -53,7 +53,7 @@
         filterTextbox.setAttribute('type', 'text');
         filterTextbox.setAttribute('id', 'basil-filter-textbox');
         filterTextbox.setAttribute('name', 'filter');
-        filterTextbox.setAttribute('value', param('filter'));
+        filterTextbox.setAttribute('value', param('filter') || '');
 
         form.appendChild(filterTextbox);
         el.appendChild(form);
