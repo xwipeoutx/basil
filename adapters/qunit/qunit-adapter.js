@@ -45,7 +45,6 @@
             executeTimeoutId = null;
             executeAll();
         }, 100);
-
     }
 
     function executeAll () {
@@ -70,23 +69,33 @@
         }
         context.numAsserts = 0;
 
-        if (context.setup) context.setup();
-
         var oldSetTimeout = global.setTimeout;
         global.setTimeout = function(callInstantly, i) { callInstantly(); };
-
-        it(testName, function() {
-            expect(numExpects);
-
-            testFunction.call(context, QUnit.assert);
-
-            if (numExpects != null)
-                equal(expect(), context.numAsserts);
-        });
-
+        runSetupAndTest();
         global.setTimeout = oldSetTimeout;
 
-        if (context.teardown) context.teardown();
+        function runSetupAndTest () {
+            if (context.setup || context.teardown) {
+                when("module setup/teardown", function() {
+                    if (context.setup) context.setup();
+                    runQUnitTest()
+                    if (context.teardown) context.teardown();
+                });
+            } else {
+                runQUnitTest()
+            }
+        }
+
+        function runQUnitTest () {
+            it(testName, function() {
+                expect(numExpects);
+
+                testFunction.call(context, QUnit.assert);
+
+                if (numExpects != null)
+                    equal(expect(), context.numAsserts);
+            });
+        }
     }
 
     global.QUnit = {
