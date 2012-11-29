@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Tests for Basil's QUnit Adapter</title>
+    <link rel="stylesheet" href="../../basil-browser-runner.css"/>
+
+    <script src="../../tests/chai.js"></script>
+
+    <script src="../../basil.js"></script>
+    <script src="../../basil-browser-runner.js"></script>
+
+    <script src="qunit-adapter.js"></script>
+    <script src="chai-qunit.js"></script>
+
+    <!--Stolen from "https://raw.github.com/jquery/qunit/master/test/test.js" -->
+    <script src="qunit-adapter-tests.js"></script>
+</head>
+<body>
+<h1>Tests for Basil</h1>
+
+<div id="qunit-fixture" style="display: none">
+    test markup
+</div>
+
+<div id="qunit-testresult" style="display: none">
+    fixture and running test name displayed - really only here for the tests to pass, because this isn't really supported
+</div>
+
+<hr/>
+
+</body>
+</html>
