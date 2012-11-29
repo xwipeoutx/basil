@@ -2,6 +2,8 @@
     QUnit.assert = {};
     override('ok', chai.assert.ok);
     override('equal', chai.assert.equal);
+    override('equals', chai.assert.equal);
+    override('notEqual', chai.assert.notEqual);
     override('deepEqual', chai.assert.deepEqual);
     override('strictEqual', chai.assert.strictEqual);
     override('notStrictEqual', chai.assert.notStrictEqual);
@@ -23,8 +25,9 @@
     }
 
     function override(name, chaiEquivalent) {
-        var qunitAssertFn = function() {
-            QUnit.current_testEnvironment.numAsserts++;
+        var qunitAssertFn = function () {
+            if (QUnit.current_testEnvironment)
+                QUnit.current_testEnvironment.numAsserts++;
             chaiEquivalent.apply(this, arguments);
         };
 
