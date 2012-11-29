@@ -1,47 +1,93 @@
 (function(global) {
-    var numAssertionsToExpect, currentModule = {}, fixture;
+    var numAssertionsToExpect;
     global.expect = function(val) {return val == null ? numAssertionsToExpect : (numAssertionsToExpect = val)};
-    global.module = function(name, args) {
-        currentModule = args || {};
-    };
 
     // Not supported
     global.start = function() {};
     global.stop = function() {};
     global.asyncTest = function() {};
 
-    global.test = function(name, expects, fn) {
-
-        if (typeof expects == "function") {
-            fn = expects;
-            expects = -1;
+    var currentModuleName = "no context supplied";
+    var testsToRun = {
+        "no context supplied": {
+            tests: []
         }
-
-        var module = currentModule;
-        describe(name, function() {
-            resetQUnitFixture();
-
-            QUnit.current_testEnvironment = {};
-            for (var key in module) {
-                QUnit.current_testEnvironment[key] = module[key];
-            }
-            QUnit.current_testEnvironment.numAsserts = 0;
-
-            if (module.setup) module.setup.call(QUnit.current_testEnvironment);
-
-            expect(expects);
-
-            var oldSetTimeout = global.setTimeout;
-            global.setTimeout = function(afterTimeout, i) { afterTimeout(); };
-            fn.call(QUnit.current_testEnvironment, QUnit.assert);
-            global.setTimeout = oldSetTimeout;
-
-            if (expects > -1)
-                equal(expect(), QUnit.current_testEnvironment.numAsserts);
-
-            if (module.teardown) module.teardown.call(QUnit.current_testEnvironment);
-        });
     };
+
+    global.module = function(name, options) {
+        var current = testsToRun[name] || (testsToRun[name] = {
+            tests: []
+        });
+        current.context = options || {};
+        currentModuleName = name;
+    }
+
+    var executeTimeoutId = false;
+
+    global.test = function(name, numExpects, testFunction) {
+        if (typeof numExpects == "function") {
+            testFunction = numExpects;
+            numExpects = null;
+        }
+        var module = testsToRun[currentModuleName];
+        module.tests.push({
+            name: name,
+            numExpects: numExpects,
+            testFunction: testFunction
+        })
+
+        if (executeTimeoutId)
+            clearTimeout(executeTimeoutId);
+
+        // FIXME: Slightly risky, if a script takes more than 100ms to download, and it shares a module name.
+        // So not that risky in practice
+        executeTimeoutId = setTimeout(function() {
+            executeTimeoutId = null;
+            executeAll();
+        }, 100);
+
+    }
+
+    function executeAll () {
+        for (var moduleName in testsToRun) {
+            var module = testsToRun[moduleName];
+
+            describe(moduleName, function() {
+                for (var i = 0; i < module.tests.length; i++) {
+                    var test = module.tests[i];
+                    run(test.name, test.numExpects, test.testFunction, module.context);
+                }
+            });
+        }
+    }
+
+    function run (testName, numExpects, testFunction, testEnvironmentBase) {
+        resetQUnitFixture();
+
+        var context = QUnit.current_testEnvironment = {};
+        for (var key in testEnvironmentBase) {
+            context[key] = testEnvironmentBase[key];
+        }
+        context.numAsserts = 0;
+
+        if (context.setup) context.setup();
+
+        var oldSetTimeout = global.setTimeout;
+        global.setTimeout = function(callInstantly, i) { callInstantly(); };
+
+        it(testName, function() {
+            expect(numExpects);
+
+            testFunction.call(context, QUnit.assert);
+
+            if (numExpects != null)
+                equal(expect(), context.numAsserts);
+        });
+
+        global.setTimeout = oldSetTimeout;
+
+        if (context.teardown) context.teardown();
+    }
 
     global.QUnit = {
         expect: global.expect,
@@ -62,7 +108,7 @@
         if (!document.body)
             return;
 
-        fixture = document.getElementById('qunit-fixture');
+        var fixture = document.getElementById('qunit-fixture');
         previousValue = previousValue || fixture.innerHTML;
         fixture.innerHTML = previousValue;
     }

@@ -130,6 +130,7 @@
     global.describe = describe;
 
     function describe (name, fn) {
+        var oldDescribe = global.describe;
         global.describe = null;
 
         var context = new Basil.Context(global, name, null);
@@ -138,7 +139,7 @@
             context.run(fn);
         context.clean();
 
-        global.describe = describe;
+        global.describe = oldDescribe;
         return context;
     }
 })(this);
