@@ -17,7 +17,7 @@
         }
 
         var filter = param('filter');
-        if (filter && name.indexOf(filter) == -1)
+        if (filter && name.toLowerCase().indexOf(filter.toLowerCase()) == -1)
             return;
 
         var context = oldDescribe(name, fn);
