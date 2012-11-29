@@ -24,7 +24,7 @@
 
     var executeTimeoutId = false;
 
-    global.test = function(name, numExpects, testFunction) {
+    global.test = function (name, numExpects, testFunction) {
         if (typeof numExpects == "function") {
             testFunction = numExpects;
             numExpects = null;
@@ -41,11 +41,15 @@
 
         // FIXME: Slightly risky, if a script takes more than 100ms to download, and it shares a module name.
         // So not that risky in practice
-        executeTimeoutId = setTimeout(function() {
+        executeTimeoutId = setTimeout(function () {
             executeTimeoutId = null;
             executeAll();
         }, 100);
-    }
+    };
+
+    global.when = function (name, fn) {
+        test(name, fn);
+    };
 
     function executeAll () {
         for (var moduleName in testsToRun) {
@@ -78,7 +82,7 @@
             if (context.setup || context.teardown) {
                 when("module setup/teardown", function() {
                     if (context.setup) context.setup();
-                    runQUnitTest()
+                    runQUnitTest();
                     if (context.teardown) context.teardown();
                 });
             } else {
