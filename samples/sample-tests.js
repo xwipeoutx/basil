@@ -1,105 +1,39 @@
-(function() {
-    var expect = chai.expect;
+describe("Teapot", function() {
+    var teapot = new Teapot();
 
-    function pass(name) {
-        it("passing " + name, function() {
-            expect(true).to.be.true;
-        });
-    }
+    it("starts with no water", function() {
+        expect(teapot.isEmpty()).to.be.true;
+    });
 
-    function fail(name) {
-        it("failing " + name, function() {
-            expect(true).to.be.false;
-        });
-    }
+    when("no water", function() {
+        when("adding water", function() {
+            teapot.addWater();
 
-    describe("all passing context", function() {
-        pass("it number 1");
-        pass("it number 2");
-
-        when("when number 1",function() {
-            pass("it number 1");
-            pass("it number 2");
-
-            when("nested when number 1",function() {
-                pass("it number 1");
-                pass("it number 2");
-            });
-
-            when("nested when number 2",function() {
-                pass("it number 1");
-                pass("it number 2");
-            });
-        });
-
-        when("when number 2",function() {
-            pass("it number 1");
-            pass("it number 2");
-
-            when("nested when number 1",function() {
-                pass("it number 1");
-                pass("it number 2");
+            it("has water", function() {
+                expect(teapot.isEmpty()).to.be.false;
             });
         });
     });
 
-    describe("all failing context", function() {
-        fail("it number 1");
-        fail("it number 2");
+    when("has water", function() {
+        teapot.addWater();
 
-        when("when number 1",function() {
-            fail("it number 1");
-            fail("it number 2");
-
-            when("nested when number 1",function() {
-                fail("it number 1");
-                fail("it number 2");
-            });
-
-            when("nested when number 2",function() {
-                fail("it number 1");
-                fail("it number 2");
-            });
+        it("is not empty", function() {
+            expect(teapot.isEmpty()).to.be.false;
         });
 
-        when("when number 2",function() {
-            fail("it number 1");
-            fail("it number 2");
+        it("cannot have water added", function() {
+            expect(function() {
+                teapot.addWater();
+            }).to.throw(CannotAddWaterError)
+        });
 
-            when("nested when number 1",function() {
-                fail("it number 1");
-                fail("it number 2");
+        when("drained", function() {
+            teapot.drain();
+
+            it("is empty", function() {
+                expect(teapot.isEmpty()).to.be.true;
             });
         });
     });
-
-    describe("some failing context", function() {
-        fail("it number 1");
-        pass("it number 2");
-
-        when("when number 1",function() {
-            pass("it number 1");
-            pass("it number 2");
-
-            when("nested when number 1",function() {
-                pass("it number 1");
-                fail("it number 2");
-            });
-
-            when("nested when number 2",function() {
-                pass("it number 1");
-                fail("it number 2");
-            });
-        });
-
-        when("when number 2",function() {
-            fail("it number 1");
-            fail("it number 2");
-
-            when("nested when number 1",function() {
-                pass("it number 1");
-                pass("it number 2");
-            });
-        });
-    });
-})();
+});
