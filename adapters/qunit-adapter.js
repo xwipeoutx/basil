@@ -1,11 +1,20 @@
 (function(global) {
     var numAssertionsToExpect;
-    global.expect = function(val) {return val == null ? numAssertionsToExpect : (numAssertionsToExpect = val)};
+
+    var testContextFunctions = {
+        expect: function(val) {return val == null ? numAssertionsToExpect : (numAssertionsToExpect = val)},
+        start: function() { QUnit.push(false, false, false, '"QUnit.start/stop" not supported for Basil\'s QUnit Adapter'); },
+        stop: function() { QUnit.push(false, false, false, '"QUnit.start/stop" not supported for Basil\'s QUnit Adapter'); }
+    };
 
     // Not supported
     global.start = function() {};
     global.stop = function() {};
-    global.asyncTest = function() {};
+    global['asyncTest'] = function(name, fn) {
+        describe(name, function() {
+            QUnit.push(false, false, false, '"QUnit.asyncTest" not supported for Basil\'s QUnit Adapter');
+        });
+    };
 
     var currentModuleName = "no context supplied";
     var testsToRun = {
@@ -24,7 +33,7 @@
 
     var executeTimeoutId = false;
 
-    global.test = function (name, numExpects, testFunction) {
+    global.test = function(name, numExpects, testFunction) {
         if (typeof numExpects == "function") {
             testFunction = numExpects;
             numExpects = null;
@@ -41,13 +50,13 @@
 
         // FIXME: Slightly risky, if a script takes more than 100ms to download, and it shares a module name.
         // So not that risky in practice
-        executeTimeoutId = setTimeout(function () {
+        executeTimeoutId = setTimeout(function() {
             executeTimeoutId = null;
             executeAll();
         }, 100);
     };
 
-    global.when = function (name, fn) {
+    global.when = function(name, fn) {
         test(name, fn);
     };
 
@@ -67,6 +76,8 @@
     function run (testName, numExpects, testFunction, testEnvironmentBase) {
         resetQUnitFixture();
 
+        var oldFunctions = overrideFunctions(testContextFunctions);
+
         var context = QUnit.current_testEnvironment = {};
         for (var key in testEnvironmentBase) {
             context[key] = testEnvironmentBase[key];
@@ -77,6 +88,8 @@
         global.setTimeout = function(callInstantly, i) { callInstantly(); };
         runSetupAndTest();
         global.setTimeout = oldSetTimeout;
+
+        overrideFunctions(oldFunctions);
 
         function runSetupAndTest () {
             if (context.setup || context.teardown) {
@@ -102,10 +115,19 @@
         }
     }
 
+    function overrideFunctions(source) {
+        var overridden = {};
+        for (var key in source) {
+            overridden[key] = global[key];
+            global[key] = source[key];
+        }
+        return overridden;
+    }
+
     global.QUnit = {
-        expect: global.expect,
         module: global.module,
         test: global.test,
+        asyncTest: global.asyncTest,
         equiv: function() {
             QUnit.push(false, false, false, '"QUnit.equiv" not supported for Basil\'s QUnit Adapter');
         },

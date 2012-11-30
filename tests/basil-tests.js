@@ -1,6 +1,4 @@
 (function() {
-    var expect = chai.expect;
-
     describe("Context", function() {
         var _ = {};
 
