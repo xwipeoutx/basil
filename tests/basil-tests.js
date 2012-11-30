@@ -253,5 +253,23 @@
                 context.run(function() { throw "Not a good error"});
             }).to.throw();
         });
+
     });
+
+    var firstDescribeThis;
+    describe("running tests", function() {
+        var describeThis = this;
+        firstDescribeThis = firstDescribeThis || describeThis;
+
+        expect(describeThis).to.not.be.null;
+
+        it("uses same this in nesting", function() {
+            expect(this).to.equal(describeThis);
+        });
+
+        it("uses a different this in a second nesting", function() {
+            expect(this).to.not.equal(firstDescribeThis);
+        });
+
+    })
 })();

@@ -8,7 +8,7 @@
     }
 
     NestedTest.prototype = {
-        execute: function(name, fn) {
+        execute: function(name, fn, thisContext) {
             var context = this._childContextProvider(this._childContextIndex, name);
             this._childContextIndex++;
 
@@ -20,7 +20,7 @@
             if (context.isComplete())
                 return;
 
-            context.run(fn);
+            context.run(fn, thisContext);
             this._hasRun = true;
 
             if (!context.isComplete()) {
@@ -55,17 +55,22 @@
             return this.name + ' ' + (this.parent ? this.parent.fullName() : '');
         },
 
-        run: function(fn) {
+        run: function(fn, scope) {
             if (this._isComplete)
                 throw new TestAlreadyCompleteError("Cannot run a complete test");
 
             var nestedTest = new NestedTest(this._childContext.bind(this));
 
-            var oldFunctions = this._overwriteGlobals(nestedTest.execute.bind(nestedTest));
+            var self = this;
+            var oldFunctions = this._overwriteGlobals(function(name, fn) {
+                nestedTest.currentContext = self;
+                nestedTest.execute(name, fn, scope);
+            });
+
             try {
-                fn.call(this);
+                fn.call(scope);
             } catch (error) {
-                this._captureError(error, fn);
+                this._captureError(error, fn, scope);
             } finally {
                 this._restoreGlobals(oldFunctions);
             }
@@ -75,13 +80,14 @@
                 this.passed = this.passed !== false && this.children.every(function(c) { return c.passed; });
         },
 
-        _captureError: function(error, fn) {
+        _captureError: function(error, fn, scope) {
             if (!(error instanceof Error))
                 throw error;
 
             this.passed = false;
             this.error = error;
             this.failingFunction = fn;
+            this.failingScope = scope;
         },
 
         _overwriteGlobals: function(nestFunction) {
@@ -135,8 +141,13 @@
 
         var context = new Basil.Context(global, name, null);
 
-        while (!context.isComplete())
-            context.run(fn);
+        while (!context.isComplete()) {
+            var scope = {
+                basilFullContext: this
+            };
+
+            context.run(fn, scope);
+        }
         context.clean();
 
         global.describe = oldDescribe;

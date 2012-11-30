@@ -142,7 +142,7 @@
         a.setAttribute('class', 'basil-inspect');
         a.setAttribute('href', '#');
 
-        var inspect = context.failingFunction.bind(context);
+        var inspect = context.failingFunction.bind(context.failingScope);
         addInspectListener(a, inspect);
 
         li.appendChild(a);
