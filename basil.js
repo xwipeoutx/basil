@@ -8,7 +8,7 @@
     }
 
     NestedTest.prototype = {
-        execute: function(name, fn, thisContext) {
+        execute: function(name, fn, scope) {
             var context = this._childContextProvider(this._childContextIndex, name);
             this._childContextIndex++;
 
@@ -20,7 +20,7 @@
             if (context.isComplete())
                 return;
 
-            context.run(fn, thisContext);
+            context.run(fn, scope);
             this._hasRun = true;
 
             if (!context.isComplete()) {
