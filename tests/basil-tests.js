@@ -148,29 +148,57 @@
             });
         });
 
-        when("context throws", function() {
-            context.run(testFunction);
+        when("context throws an exception", function() {
+            when("thrown value is an Error", function() {
+                context.run(testFunction);
 
-            it("is complete", function() {
-                expect(context.isComplete()).to.be.true;
+                it("is complete", function() {
+                    expect(context.isComplete()).to.be.true;
+                });
+
+                it("does not pass", function() {
+                    expect(context.passed).to.be.false;
+                });
+
+                it("has error details", function() {
+                    expect(context.error.message).to.equal("Foo");
+                });
+
+                it("holds on to test function", function() {
+                    expect(context.failingFunction).to.equal(testFunction);
+                });
+
+                function testFunction () {
+                    throw new Error("Foo");
+                }
             });
 
-            it("does not pass", function() {
-                expect(context.passed).to.be.false;
-            });
 
-            it("has error details", function() {
-                expect(context.error.message).to.equal("Foo");
-            });
+            when("thrown value is a primitive", function() {
+                context.run(testFunction);
 
-            it("holds on to test function", function() {
-                expect(context.failingFunction).to.equal(testFunction);
-            });
+                it("is complete", function() {
+                    expect(context.isComplete()).to.be.true;
+                });
 
-            function testFunction () {
-                throw new Error("Foo");
-            }
+                it("does not pass", function() {
+                    expect(context.passed).to.be.false;
+                });
+
+                it("has error details", function() {
+                    expect(context.error.message).to.equal("Foo");
+                });
+
+                it("holds on to test function", function() {
+                    expect(context.failingFunction).to.equal(testFunction);
+                });
+
+                function testFunction () {
+                    throw "Foo";
+                }
+            });
         });
+
 
         when("single inner throws", function() {
             context.run(function() {
@@ -244,12 +272,6 @@
                 _.when("inner not throwing", function() { });
                 _.when("inner throwing", function() { throw new Error("an Error")});
             }
-        });
-
-        it("rethrows non-Error exceptions", function() {
-            expect(function() {
-                context.run(function() { throw "Not a good error"});
-            }).to.throw();
         });
 
     });

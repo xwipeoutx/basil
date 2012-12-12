@@ -82,7 +82,7 @@
 
         _captureError: function(error, fn, scope) {
             if (!(error instanceof Error))
-                throw error;
+                error = new Error(error);
 
             this.passed = false;
             this.error = error;
