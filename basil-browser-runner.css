@@ -73,3 +73,30 @@ a.basil-inspect {
     text-decoration: none;
     font-size: small;
 }
+
+/* Code */
+.toggle-fail-code {
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1em;
+    height: 1em;
+}
+.toggle-fail-code:before {
+    font-weight: bold;
+    content: '›';
+    width: 1em;
+    height: 0.7em;
+}
+.toggle-fail-code:checked:before {
+    content: '⌵';
+}
+.fail-code {
+    font-family: Consolas, monospace;
+    white-space: pre;
+    display: none;
+    font-size: 0.7em;
+}
+.toggle-fail-code:checked ~ .fail-code {
+    display: block;
+}

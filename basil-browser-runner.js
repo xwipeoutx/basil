@@ -107,8 +107,10 @@
         if (context.children.length)
             addExpandCollapse(li, context);
 
-        if (context.failingFunction)
+        if (context.failingFunction) {
             addInspectionLink(li, context);
+            addViewCodeLink(li, context);
+        }
 
         return li;
     }
@@ -149,6 +151,28 @@
     }
 
     function addInspectListener (a, stepInHere) {
+        a.addEventListener('click', function(event) {
+            event.preventDefault();
+            debugger;
+            stepInHere();
+        });
+    }
+
+    function addViewCodeLink (li, context) {
+        var checkbox = document.createElement('input');
+        checkbox.setAttribute('type', 'checkbox');
+        checkbox.setAttribute('class', 'toggle-fail-code');
+
+        var code = document.createElement('span');
+        code.innerHTML = context.failingFunction.toString().split("\n").slice(1, -1).join("\n");
+        code.setAttribute('class', 'fail-code');
+
+        li.appendChild(checkbox);
+        li.appendChild(code);
+    }
+
+
+    function addViewCodeListener (a, stepInHere) {
         a.addEventListener('click', function(event) {
             event.preventDefault();
             debugger;
