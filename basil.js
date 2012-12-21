@@ -63,6 +63,10 @@
 
             var self = this;
             var oldFunctions = this._overwriteGlobals(function(name, fn) {
+                if (typeof name == "function") {
+                    fn = name;
+                    name = this._extractPartNameFromFunction(fn);
+                }
                 nestedTest.currentContext = self;
                 nestedTest.execute(name, fn, scope);
             });
@@ -80,9 +84,19 @@
                 this.passed = this.passed !== false && this.children.every(function(c) { return c.passed; });
         },
 
+        _extractPartNameFromFunction: function(fn) {
+            var fnContents = fn.toString();
+
+            fnContents = /function.+\{([\s\S]+)\}\w*$/.exec(fnContents)[1];
+            if (fnContents == null)
+                return "(No Name)";
+
+            return fnContents.replace(/\W+/gi, ' ').trim();
+        },
+
         _captureError: function(error, fn, scope) {
             if (!(error instanceof Error))
-                throw error;
+                error = new Error(error);
 
             this.passed = false;
             this.error = error;
