@@ -174,15 +174,6 @@
         li.appendChild(code);
     }
 
-
-    function addViewCodeListener (a, stepInHere) {
-        a.addEventListener('click', function(event) {
-            event.preventDefault();
-            debugger;
-            stepInHere();
-        });
-    }
-
     function getCssClass (context) {
         var cssClass = context.passed === true ? 'is-passed'
             : context.passed === false ? 'is-failed'
