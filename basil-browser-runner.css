@@ -1,75 +1,99 @@
-ul {
+﻿@charset "UTF-8";
+
+body {
+    margin: 0;
+    font-family: sans-serif;
+    color: hsl(0, 0%, 25%);
+}
+
+.basil-header {
+    background: hsl(76, 35%, 75%);
+    color: hsl(76, 35%, 95%);
+    padding: 0.5em;
+    text-shadow: 1px 1px 6px hsl(76, 35%, 60%);
+}
+
+.basil-header input {
+    border: none;
+    background: white;
+    box-shadow: 1px 1px 6px hsl(76, 35%, 60%);
+}
+
+.basil-header input[type="checkbox"] {  
+    height: 1em;  
+    width: 1em;
+    vertical-align: text-top;
+    -webkit-appearance: none;  
+}
+
+.basil-header input[type="checkbox"]:checked:before {
+    content: '✔';
+    position: relative;
+    top: -0.1em;
+    color: hsl(76, 35%, 50%);
+}
+
+#basil-title {
+    font-size: 2em;
+    color: white;
+}
+
+#basil-results {
+    padding: 1em 1.5em;
+}
+
+#basil-results ul {
     padding-left: 1em;
     margin-top: 0;
     margin-bottom: 0;
 }
-li {
-    list-style-image: none;
-    list-style: none;
-    padding-left: 0px;
-    margin-left: 0px;
-    list-style-position: outside;
+#basil-results li {
+    padding-left: 0;
+    margin-left: 0;
 }
-.basil-hide-passed .pass {
+
+.is-hiding-passed .is-passed {
     display: none;
 }
 
 /* Parents */
-.parent {
+.basil-parent {
     font-weight: bold;
-}
-.parent {
     list-style-image: url(data:image/gif;base64,R0lGODlhCQAJAIABAAAAAAAAACH5BAEAAAEALAAAAAAJAAkAAAINjI95wN3hnolJVoVzKAA7);
 }
-.parent.collapsed {
+.basil-parent.is-collapsed {
     list-style-image: url(data:image/gif;base64,R0lGODlhCQAJAPcBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAAEALAAAAAAJAAkAAAggAAME+CewYMF/BA0KRJjQIMOGCx86ZKiQYkWIBxUGCAgAOw==);
 }
-.parent.collapsed > ul {
+.basil-parent.is-collapsed > ul {
     display: none;
 }
-.parent:hover {
+.basil-parent:hover {
     cursor: pointer;
 }
 
 /* Leaves */
-.leaf {
+.basil-leaf {
     font-weight: normal;
-}
-.leaf{
     cursor: default;
+    list-style: none;
 }
 
-/* Passing */
-.parent.pass {
-    color: #006600;
-}
-.leaf.pass {
-    color: #009900;
-}
-.pass:before {
+/* Test state */
+.is-passed:before {
     content: '✓ ';
-    color: #009900;
+    color: hsl(76, 80%, 40%);
 }
 
-/* Fail */
-.parent.fail {
-    color: #660000;
-}
-.leaf.fail {
-    color: #990000;
-}
-.fail:before {
+.is-failed:before {
     content: '✗ ';
+    color: hsl(0, 80%, 50%);
 }
 
-/* Not Run */
-.not-run {
-    color: #555500;
-}
-.not-run:before {
+.is-not-run:before {
     content: '∅ ';
 }
-a.basil-inspect {
+
+.basil-inspect {
     text-decoration: none;
     font-size: small;
 }

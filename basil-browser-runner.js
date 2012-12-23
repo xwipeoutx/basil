@@ -1,19 +1,19 @@
-(function(global) {
+(function (global) {
     var oldDescribe = global.describe;
     global.describe = describe;
     var localStorage = global.localStorage || {};
     var isSetup = false;
     var destinationElement;
 
-    function describe (name, fn) {
+    function describe(name, fn) {
         if (!document.body) {
-            setTimeout(function() { describe(name, fn);}, 100);
+            setTimeout(function () { describe(name, fn); }, 100);
             return;
         }
 
         if (!isSetup) {
             isSetup = true;
-            destinationElement = setup();
+            setup();
         }
 
         var filter = param('filter');
@@ -21,7 +21,7 @@
             return;
 
         var context = oldDescribe(name, fn);
-        appendResultElements(destinationElement, [context]);
+        appendResults(document.getElementById('basil-results'), [context]);
     }
 
     function param(key) {
@@ -35,67 +35,70 @@
         }
     }
 
+    var baseTemplate =
+        '<div class="basil-header">'
+            + '<div id="basil-title"></div>'
+            + '<form method="get" id="basil-settings">'
+                + '<label>Filter <input type="text" id="basil-filter" name="filter"></label>'
+                + '<label><input type="checkbox" id="basil-hide-passed" name="hide-passed">Hide Passed</label>'
+            + '</form>'
+        + '</div>'
+        + '<div id="basil-results"></div>';
+
     function setup() {
-        var destinationElement = getOrCreateDestinationElement();
-        appendFilterForm(destinationElement);
-        appendHidePassed(destinationElement);
-        return destinationElement;
+        createBaseStructure();
+        setTitle();
+        setupSettingsForm();
+        setupHidePassed();
 
+        function createBaseStructure() {
+            var body = document.body;
+            createDom(baseTemplate)
+                .forEach(body.appendChild.bind(body));
+        }
+
+        function setTitle() {
+            var pageTitle = document.getElementsByTagName('title');
+            var titleText = pageTitle.length ? pageTitle[0].innerText : 'Basil';
+            document.getElementById('basil-title').innerText = titleText;
+        }
+
+        function setupSettingsForm() {
+            document.getElementById('basil-settings').setAttribute('action', document.location.href);
+
+            var filter = document.getElementById('basil-filter');
+            filter.setAttribute('value', param('filter') || '');
+            filter.focus();
+        }
+
+        function setupHidePassed() {
+            var checkbox = document.getElementById('basil-hide-passed')
+            var results = document.getElementById('basil-results');
+
+            checkbox.addEventListener('change', function () {
+                if (checkbox.checked)
+                    results.setAttribute('class', 'is-hiding-passed');
+                else
+                    results.removeAttribute('class');
+            });
+        }
     }
 
-    function appendFilterForm(el) {
-        var form = document.createElement('form');
-        form.setAttribute('method', 'get');
-        form.setAttribute('action', document.location.href);
-        form.style.display = 'inline-block';
-
-        var filterTextbox = document.createElement('input');
-        filterTextbox.setAttribute('type', 'text');
-        filterTextbox.setAttribute('id', 'basil-filter-textbox');
-        filterTextbox.setAttribute('name', 'filter');
-        filterTextbox.setAttribute('value', param('filter') || '');
-
-        form.appendChild(filterTextbox);
-        el.appendChild(form);
-
-        filterTextbox.focus();
-    }
-
-    function appendHidePassed(el) {
-        var checkbox = document.createElement('input');
-        checkbox.setAttribute('type', 'checkbox');
-        checkbox.setAttribute('id', 'basil-hide-passed-checkbox');
-
-        var label = document.createElement('label');
-        label.setAttribute('for', 'basil-hide-passed-checkbox');
-        label.innerHTML += "Hide Passed";
-
-        checkbox.addEventListener('change', function() {
-            if (checkbox.checked)
-                el.setAttribute('class', 'basil-hide-passed');
-            else
-                el.removeAttribute('class');
-        });
-
-        el.appendChild(checkbox);
-        el.appendChild(label);
-    }
-
-    function appendResultElements (el, contexts) {
+    function appendResults(el, contexts) {
         if (!contexts.length)
             return;
 
         var ul = document.createElement('ul');
-        contexts.forEach(function(context, i) {
+        contexts.forEach(function (context, i) {
             var li = createLi(context);
-            appendResultElements(li, context.children);
+            appendResults(li, context.children);
             ul.appendChild(li);
         });
 
         el.appendChild(ul);
     }
 
-    function createLi (context) {
+    function createLi(context) {
         var cssClass = getCssClass(context);
         var caption = getCaption(context);
 
@@ -116,7 +119,7 @@
     }
 
     function addExpandCollapse(li, context, cssClass) {
-        li.addEventListener('click', function(event) {
+        li.addEventListener('click', function (event) {
             if (event.target != li)
                 return;
 
@@ -138,7 +141,7 @@
 
     }
 
-    function addInspectionLink (li, context) {
+    function addInspectionLink(li, context) {
         var a = document.createElement('a');
         a.innerHTML = " inspect";
         a.setAttribute('class', 'basil-inspect');
@@ -150,8 +153,8 @@
         li.appendChild(a);
     }
 
-    function addInspectListener (a, stepInHere) {
-        a.addEventListener('click', function(event) {
+    function addInspectListener(a, stepInHere) {
+        a.addEventListener('click', function (event) {
             event.preventDefault();
             debugger;
             stepInHere();
@@ -181,29 +184,31 @@
     }
 
     function getCssClass (context) {
-        var cssClass = context.passed === true ? 'pass'
-            : context.passed === false ? 'fail'
-            : 'not-run';
+        var cssClass = context.passed === true ? 'is-passed'
+            : context.passed === false ? 'is-failed'
+            : 'is-not-run';
 
-        cssClass += context.children.length ? ' parent' : ' leaf';
+        cssClass += context.children.length ? ' basil-parent' : ' basil-leaf';
 
         if (isCollapsed(context))
-            cssClass += ' collapsed';
+            cssClass += ' is-collapsed';
         return cssClass;
     }
 
-    function getCaption (context) {
+    function getCaption(context) {
         var errorString = context.error ? ('(' + context.error.toString() + ')') : '';
         return context.name + " " + errorString;
     }
 
-    function getOrCreateDestinationElement () {
-        var destinationElement = document.getElementById("basil-test-output");
-        if (!destinationElement) {
-            destinationElement = document.createElement('div');
-            destinationElement.setAttribute('id', 'basil-test-output');
-            document.body.appendChild(destinationElement);
-        }
-        return destinationElement;
+    var nursery = document.createElement('div');
+
+    function createDom(html) {
+        nursery.innerHTML = html;
+        var elements = [];
+
+        while (nursery.children.length)
+            elements.push(nursery.removeChild(nursery.children[0]));
+
+        return elements;
     }
 })(this);
