@@ -67,18 +67,18 @@
             describe(moduleName, function() {
                 for (var i = 0; i < module.tests.length; i++) {
                     var test = module.tests[i];
-                    run(test.name, test.numExpects, test.testFunction, module.context);
+                    run(this, test.name, test.numExpects, test.testFunction, module.context);
                 }
             });
         }
     }
 
-    function run (testName, numExpects, testFunction, testEnvironmentBase) {
+    function run (context, testName, numExpects, testFunction, testEnvironmentBase) {
         resetQUnitFixture();
 
         var oldFunctions = overrideFunctions(testContextFunctions);
 
-        var context = QUnit.current_testEnvironment = {};
+        QUnit.current_testEnvironment = context;
         for (var key in testEnvironmentBase) {
             context[key] = testEnvironmentBase[key];
         }
@@ -105,7 +105,8 @@
 
         function runQUnitTest () {
             it(testName, function() {
-                expect(numExpects);
+                if (expect)
+                    expect(numExpects);
 
                 testFunction.call(context, QUnit.assert);
 

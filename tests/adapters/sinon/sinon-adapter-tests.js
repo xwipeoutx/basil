@@ -33,4 +33,4 @@ describe("test failures", function() {
         });
 
     })
-})
+});
