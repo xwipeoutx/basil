@@ -3,7 +3,6 @@
     global.describe = describe;
     var localStorage = global.localStorage || {};
     var isSetup = false;
-    var destinationElement;
 
     function describe(name, fn) {
         if (!document.body) {
@@ -22,6 +21,8 @@
 
         var context = oldDescribe(name, fn);
         appendResults(document.getElementById('basil-results'), [context]);
+        if (!context.passed)
+            document.getElementById('basil-header').className = 'is-failed';
     }
 
     function param(key) {
@@ -36,7 +37,7 @@
     }
 
     var baseTemplate =
-        '<div class="basil-header">'
+        '<div id="basil-header">'
             + '<div id="basil-title"></div>'
             + '<form method="get" id="basil-settings">'
                 + '<label>Filter <input type="text" id="basil-filter" name="filter"></label>'

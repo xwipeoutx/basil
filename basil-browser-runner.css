@@ -6,31 +6,46 @@ body {
     color: hsl(0, 0%, 25%);
 }
 
-.basil-header {
+#basil-header {
     background: hsl(76, 35%, 75%);
     color: hsl(76, 35%, 95%);
     padding: 0.5em;
     text-shadow: 1px 1px 6px hsl(76, 35%, 60%);
 }
 
-.basil-header input {
+#basil-header.is-failed {
+    background: hsl(0, 65%, 75%);
+    color: hsl(76, 35%, 95%);
+    padding: 0.5em;
+    text-shadow: 1px 1px 6px hsl(0, 35%, 60%);
+}
+
+#basil-header input {
     border: none;
     background: white;
     box-shadow: 1px 1px 6px hsl(76, 35%, 60%);
 }
 
-.basil-header input[type="checkbox"] {  
+#basil-header.is-failed input {
+    box-shadow: 1px 1px 6px hsl(0, 35%, 60%);
+}
+
+#basil-header input[type="checkbox"] {  
     height: 1em;  
     width: 1em;
     vertical-align: text-top;
     -webkit-appearance: none;  
 }
 
-.basil-header input[type="checkbox"]:checked:before {
+#basil-header input[type="checkbox"]:checked:before {
     content: '✔';
     position: relative;
     top: -0.1em;
     color: hsl(76, 35%, 50%);
+}
+
+#basil-header.is-failed input[type="checkbox"]:checked:before {
+    acolor: hsl(0, 35%, 50%);
 }
 
 #basil-title {
@@ -84,7 +99,7 @@ body {
     color: hsl(76, 80%, 40%);
 }
 
-.is-failed:before {
+li.is-failed:before {
     content: '✗ ';
     color: hsl(0, 80%, 50%);
 }
