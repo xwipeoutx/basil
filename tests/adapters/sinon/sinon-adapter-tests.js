@@ -4,7 +4,7 @@ describe("in describe root", function() {
 
 describe("in nested stuff", function() {
     when("in a when", function() {
-        expect(this.spy).to.exist;
+        then(function() {expect(this.spy).to.exist});
     });
 });
 

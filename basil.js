@@ -144,7 +144,7 @@
         NestedTest: NestedTest,
         Context: Context,
         TestAlreadyCompleteError: TestAlreadyCompleteError,
-        nestFunctions: ['when', 'it']
+        nestFunctions: ['when', 'then', 'it']
     };
 
     global.describe = describe;

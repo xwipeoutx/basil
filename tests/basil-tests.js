@@ -4,21 +4,21 @@
 
         var context = new Basil.Context(_, "Constructed name", null);
 
-        it(function() { expect(context.name).to.equal("Constructed name"); });
+        then(function() { expect(context.name).to.equal("Constructed name"); });
 
-        it("gets global from constructor", function() {
+        then("gets global from constructor", function() {
             expect(context._global).to.equal(_);
         });
 
         when("no inner tests", function() {
             context.run(testFunction);
 
-            it(function() { expect(context.isComplete()).to.be.true; });
+            then(function() { expect(context.isComplete()).to.be.true; });
 
-            it(function() { expect(context.passed).to.be.true; });
+            then(function() { expect(context.passed).to.be.true; });
 
             when("running a second time", function() {
-                it(function() {
+                then(function() {
                     expect(function() {
                         context.run(testFunction)
                     }).to.throw(Basil.TestAlreadyCompleteError);
@@ -33,14 +33,14 @@
                 _.when("Inner Name", function() {});
             });
 
-            it(function() { expect(context.isComplete()).to.be.true; });
-            it(function() { expect(context.passed).to.be.true; });
+            then(function() { expect(context.isComplete()).to.be.true; });
+            then(function() { expect(context.passed).to.be.true; });
 
             when("child is added", function() {
                 var child = context.children[0];
 
-                it(function() { expect(child.isComplete()).to.be.true; });
-                it(function() { expect(child.name).to.equal("Inner Name"); });
+                then(function() { expect(child.isComplete()).to.be.true; });
+                then(function() { expect(child.name).to.equal("Inner Name"); });
             });
         });
 
@@ -55,15 +55,15 @@
             when("run once", function() {
                 context.run(testFunction);
 
-                it(function() { expect(context.isComplete()).to.be.false; });
-                it(function() { expect(context.passed).to.be.undefined; });
+                then(function() { expect(context.isComplete()).to.be.false; });
+                then(function() { expect(context.passed).to.be.undefined; });
 
-                it(function() { expect(firstInnerRunCount).to.equal(1); });
-                it(function() { expect(secondInnerRunCount).to.equal(0); });
+                then(function() { expect(firstInnerRunCount).to.equal(1); });
+                then(function() { expect(secondInnerRunCount).to.equal(0); });
 
                 var child1 = context.children[0];
                 var child2 = context.children[1];
-                it("has 2 children, only 1 of which is complete", function() {
+                then("has 2 children, only 1 of which is complete", function() {
                     expect(context.children.length).to.equal(2);
                     expect(child1.isComplete()).to.be.true;
                     expect(child2.isComplete()).to.be.false;
@@ -72,13 +72,13 @@
                 when("run again", function() {
                     context.run(testFunction);
 
-                    it(function() { expect(context.isComplete()).to.be.true; });
-                    it(function() { expect(context.passed).to.be.true; });
+                    then(function() { expect(context.isComplete()).to.be.true; });
+                    then(function() { expect(context.passed).to.be.true; });
 
-                    it(function() { expect(firstInnerRunCount).to.equal(1); });
-                    it(function() { expect(secondInnerRunCount).to.equal(1); });
-                    it(function() { expect(child2.isComplete()).to.be.true; });
-                    it(function() { expect(context.children[1]).to.equal(child2); });
+                    then(function() { expect(firstInnerRunCount).to.equal(1); });
+                    then(function() { expect(secondInnerRunCount).to.equal(1); });
+                    then(function() { expect(child2.isComplete()).to.be.true; });
+                    then(function() { expect(context.children[1]).to.equal(child2); });
                 });
             });
         });
@@ -98,11 +98,11 @@
                 context.run(testFunction);
                 context.run(testFunction);
 
-                it(function() { expect(context.isComplete()).to.be.true; });
+                then(function() { expect(context.isComplete()).to.be.true; });
 
-                it(function() { expect(firstInnerRunCount).to.equal(1); });
-                it(function() { expect(secondInnerRunCount).to.equal(1); });
-                it(function() { expect(thirdInnerRunCount).to.equal(1); });
+                then(function() { expect(firstInnerRunCount).to.equal(1); });
+                then(function() { expect(secondInnerRunCount).to.equal(1); });
+                then(function() { expect(thirdInnerRunCount).to.equal(1); });
             });
         });
 
@@ -112,7 +112,7 @@
                     _.when(function() {expect(true).to.be.true;});
                 });
 
-                it("makes up the name", function() {
+                then("makes up the name", function() {
                     expect(context.children[0].name).to.equal("expect true to be true");
                 });
             });
@@ -125,7 +125,7 @@
                     });
                 });
 
-                it("makes up the name itself", function() {
+                then("makes up the name itself", function() {
                     expect(context.children[0].name).to.equal("expect true to be true");
                 });
             });
@@ -135,10 +135,10 @@
             when("thrown value is an Error", function() {
                 context.run(functionToTest);
 
-                it(function() { expect(context.isComplete()).to.be.true; });
-                it(function() { expect(context.passed).to.be.false; });
-                it(function() { expect(context.error.message).to.equal("Foo"); });
-                it(function() { expect(context.failingFunction).to.equal(functionToTest); });
+                then(function() { expect(context.isComplete()).to.be.true; });
+                then(function() { expect(context.passed).to.be.false; });
+                then(function() { expect(context.error.message).to.equal("Foo"); });
+                then(function() { expect(context.failingFunction).to.equal(functionToTest); });
 
                 function functionToTest () {
                     throw new Error("Foo");
@@ -148,10 +148,10 @@
             when("thrown value is a primitive", function() {
                 context.run(functionToTest);
 
-                it(function() { expect(context.isComplete()).to.be.true; });
-                it(function() { expect(context.passed).to.be.false; });
-                it("has the primitive put in the Error", function() { expect(context.error.message).to.equal("Foo"); });
-                it(function() { expect(context.failingFunction).to.equal(functionToTest); });
+                then(function() { expect(context.isComplete()).to.be.true; });
+                then(function() { expect(context.passed).to.be.false; });
+                then("has the primitive put in the Error", function() { expect(context.error.message).to.equal("Foo"); });
+                then(function() { expect(context.failingFunction).to.equal(functionToTest); });
 
                 function functionToTest () {
                     throw "Foo";
@@ -164,27 +164,27 @@
                 _.when("inner throwing", function() { throw new Error("Foo")});
             });
 
-            it(function() { expect(context.isComplete()).to.be.true; });
-            it(function() { expect(context.passed).to.be.false; });
+            then(function() { expect(context.isComplete()).to.be.true; });
+            then(function() { expect(context.passed).to.be.false; });
         });
 
         when("first inner of 2 throws", function() {
             when("run the first time", function() {
                 context.run(testFunction);
 
-                it(function() { expect(context.isComplete()).to.be.false; });
+                then(function() { expect(context.isComplete()).to.be.false; });
 
                 var firstChild = context.children[0];
-                it(function() { expect(firstChild.passed).to.be.false; });
+                then(function() { expect(firstChild.passed).to.be.false; });
 
                 when("run a second time", function() {
                     context.run(testFunction);
 
-                    it(function() { expect(context.isComplete()).to.be.true; });
-                    it(function() { expect(context.passed).to.be.false; });
+                    then(function() { expect(context.isComplete()).to.be.true; });
+                    then(function() { expect(context.passed).to.be.false; });
 
                     var secondChild = context.children[1];
-                    it(function() { expect(secondChild.passed).to.be.true; });
+                    then(function() { expect(secondChild.passed).to.be.true; });
                 });
             });
             function testFunction () {
@@ -197,14 +197,14 @@
             context.run(testFunction);
             context.run(testFunction);
 
-            it(function() { expect(context.isComplete()).to.be.true; });
-            it(function() { expect(context.passed).to.be.false; });
+            then(function() { expect(context.isComplete()).to.be.true; });
+            then(function() { expect(context.passed).to.be.false; });
 
             var firstChild = context.children[0];
-            it(function() { expect(firstChild.passed).to.be.true; });
+            then(function() { expect(firstChild.passed).to.be.true; });
 
             var secondChild = context.children[1];
-            it(function() { expect(secondChild.passed).to.be.false; });
+            then(function() { expect(secondChild.passed).to.be.false; });
 
             function testFunction () {
                 _.when("inner not throwing", function() { });
@@ -221,8 +221,8 @@
 
         expect(thisForCurrentDescribe).to.not.be.null;
 
-        it(function() { expect(this).to.equal(thisForCurrentDescribe); });
-        it(function() { expect(this).to.not.equal(firstDescribeThis); });
+        then(function() { expect(this).to.equal(thisForCurrentDescribe); });
+        then(function() { expect(this).to.not.equal(firstDescribeThis); });
 
     })
 })();
