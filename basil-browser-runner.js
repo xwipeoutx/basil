@@ -4,6 +4,9 @@
     var localStorage = global.localStorage || {};
     var isSetup = false;
 
+    var totalCounts = [];
+    var totalPasses = [];
+
     function describe(name, fn) {
         if (!document.body) {
             setTimeout(function () { describe(name, fn); }, 100);
@@ -21,6 +24,8 @@
 
         var context = oldDescribe(name, fn);
         appendResults(document.getElementById('basil-results'), [context]);
+        updateTotals(context);
+
         if (!context.passed)
             document.getElementById('basil-header').className = 'is-failed';
     }
@@ -39,6 +44,10 @@
 
     var baseTemplate =
         '<div id="basil-header">'
+            + '<div id="basil-summary">'
+            + '<div>Total:<ul id="basil-totals"></ul></div>'
+            + '<div> Pass:<ul id="basil-passes"></ul></div>'
+            + '</div>'
             + '<a id="basil-title"></a>'
             + '<form method="get" id="basil-settings">'
                 + '<label>Filter <input type="text" id="basil-filter" name="filter"></label>'
@@ -192,6 +201,38 @@
     function getCaption(context) {
         var errorString = context.error ? ('(' + context.error.toString() + ')') : '';
         return context.name + " " + errorString;
+    }
+
+    function updateTotals(context) {
+        calculateTotals([context], 0);
+
+        updateTotalsNode(document.getElementById('basil-totals'), totalCounts);
+        updateTotalsNode(document.getElementById('basil-passes'), totalPasses);
+    }
+
+    function calculateTotals(results, level) {
+        if (!results.length)
+            return;
+
+        var currentTotalCount = totalCounts[level] || 0;
+        totalCounts[level] = currentTotalCount + results.length;
+
+        var currentPassCount = totalPasses[level] || 0;
+        var passingResults = results.filter(function(result) { return result.passed; });
+        totalPasses[level] =  currentPassCount + passingResults.length;
+
+        results.forEach(function(result) { calculateTotals(result.children, level+1);});
+    }
+
+    function updateTotalsNode(listNode, totalCounts) {
+        totalCounts.forEach(function(totalCount, i) {
+            var nextNode = listNode.childNodes[i];
+            if (!nextNode) {
+                nextNode = document.createElement('li');
+                listNode.appendChild(nextNode);
+            }
+            nextNode.innerHTML = ' ' + ('      ' + totalCount).slice(-5);
+        });
     }
 
     var nursery = document.createElement('div');

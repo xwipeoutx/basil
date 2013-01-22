@@ -30,11 +30,11 @@ body {
     box-shadow: 1px 1px 6px hsl(0, 35%, 60%);
 }
 
-#basil-header input[type="checkbox"] {  
-    height: 1em;  
+#basil-header input[type="checkbox"] {
+    height: 1em;
     width: 1em;
     vertical-align: text-top;
-    -webkit-appearance: none;  
+    -webkit-appearance: none;
 }
 
 #basil-header input[type="checkbox"]:checked:before {
@@ -60,6 +60,7 @@ body {
     margin-top: 0;
     margin-bottom: 0;
 }
+
 #basil-results li {
     padding-left: 0;
     margin-left: 0;
@@ -74,12 +75,15 @@ body {
     font-weight: bold;
     list-style-image: url(data:image/gif;base64,R0lGODlhCQAJAIABAAAAAAAAACH5BAEAAAEALAAAAAAJAAkAAAINjI95wN3hnolJVoVzKAA7);
 }
+
 .basil-parent.is-collapsed {
     list-style-image: url(data:image/gif;base64,R0lGODlhCQAJAPcBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAAEALAAAAAAJAAkAAAggAAME+CewYMF/BA0KRJjQIMOGCx86ZKiQYkWIBxUGCAgAOw==);
 }
+
 .basil-parent.is-collapsed > ul {
     display: none;
 }
+
 .basil-parent:hover {
     cursor: pointer;
 }
@@ -119,21 +123,44 @@ li.is-failed:before {
     width: 1em;
     height: 1em;
 }
+
 .toggle-fail-code:before {
     font-weight: bold;
     content: '›';
     width: 1em;
     height: 0.7em;
 }
+
 .toggle-fail-code:checked:before {
     content: '⌵';
 }
+
 .fail-code {
     font-family: Consolas, monospace;
     white-space: pre;
     display: none;
     font-size: 0.7em;
 }
+
 .toggle-fail-code:checked ~ .fail-code {
     display: block;
+}
+
+/* Summary */
+#basil-summary {
+    white-space: pre;
+    position: absolute;
+    font-family: monospace;
+    right: 10px;
+}
+
+#basil-summary ul {
+    display: inline-block;
+    padding: 0;
+    margin: 0;
+}
+
+#basil-summary li {
+    display: inline-block;
+    height: 1em;
 }
