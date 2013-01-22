@@ -44,13 +44,11 @@ body {
     color: hsl(76, 35%, 50%);
 }
 
-#basil-header.is-failed input[type="checkbox"]:checked:before {
-    acolor: hsl(0, 35%, 50%);
-}
-
 #basil-title {
     font-size: 2em;
     color: white;
+    text-decoration: none;
+    display: block;
 }
 
 #basil-results {

@@ -31,14 +31,15 @@
         for (var i = 0; i < vars.length; i++) {
             var pair = vars[i].split('=');
             if (decodeURIComponent(pair[0]) == key) {
-                return decodeURIComponent(pair[1]);
+                var value = pair[1].replace('+', ' ');
+                return decodeURIComponent(value);
             }
         }
     }
 
     var baseTemplate =
         '<div id="basil-header">'
-            + '<div id="basil-title"></div>'
+            + '<a id="basil-title"></a>'
             + '<form method="get" id="basil-settings">'
                 + '<label>Filter <input type="text" id="basil-filter" name="filter"></label>'
                 + '<label><input type="checkbox" id="basil-hide-passed" name="hide-passed">Hide Passed</label>'
@@ -62,6 +63,7 @@
             var pageTitle = document.getElementsByTagName('title');
             var titleText = pageTitle.length ? pageTitle[0].innerText : 'Basil';
             document.getElementById('basil-title').innerText = titleText;
+            document.getElementById('basil-title').href = document.location.href.replace(document.location.search, '');
         }
 
         function setupSettingsForm() {
