@@ -17,14 +17,14 @@ Example test (basil + chai.js)
             when("adding water", function() {
                 teapot.addWater();
 
-                it(function() { expect(teapot.isEmpty()).to.be.false; });
+                then(function() { expect(teapot.isEmpty()).to.be.false; });
             });
         });
 
         when("has water", function() {
             teapot.addWater();
 
-            it(function() { expect(teapot.isEmpty()).to.be.false; });
+            then(function() { expect(teapot.isEmpty()).to.be.false; });
 
             it("cannot have water added", function() {
                 expect(function() {
@@ -35,7 +35,7 @@ Example test (basil + chai.js)
             when("drained", function() {
                 teapot.drain();
 
-                it(function() { expect(teapot.isEmpty()).to.be.true; });
+                then(function() { expect(teapot.isEmpty()).to.be.true; });
             });
         });
     });
