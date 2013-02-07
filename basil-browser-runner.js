@@ -87,12 +87,18 @@
             var checkbox = document.getElementById('basil-hide-passed')
             var results = document.getElementById('basil-results');
 
-            checkbox.addEventListener('change', function () {
+            checkbox.checked = localStorage.isHidePassedChecked == 'true';
+            updateHidePassedState();
+
+            checkbox.addEventListener('change', updateHidePassedState);
+
+            function updateHidePassedState() {
+                localStorage.isHidePassedChecked = checkbox.checked;
                 if (checkbox.checked)
                     results.setAttribute('class', 'is-hiding-passed');
                 else
                     results.removeAttribute('class');
-            });
+            };
         }
     }
 
