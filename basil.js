@@ -138,9 +138,74 @@
         }
     };
 
+    function TestRunner (global) {
+        this._global = global;
+        this._intercepted = [];
+    }
+    TestRunner.prototype = {
+        intercept: function(methodName) {
+            if (this._global[methodName])
+                throw new CannotInterceptExistingMethodError(methodName);
+
+            this._global[methodName] = this._handleIntercept.bind(this);
+            this._intercepted.push(methodName);
+        },
+
+        restore: function() {
+            this._intercepted.forEach(function(methodName) {
+                delete this._global[methodName];
+            }, this);
+            this._intercepted.length = 0;
+        },
+
+        _handleIntercept: function() {
+            this.test.apply(this, arguments);
+        },
+
+        test: function() {
+
+        }
+    };
+
+    function TestExecutionStatus(name) {
+        this._name = name;
+        this._isComplete = false;
+        this._hasRun = false;
+        this._children = {};
+    }
+    TestExecutionStatus.prototype = {
+        name: function() {
+            return this._name;
+        },
+        isComplete: function() {
+            return this._hasRun
+                && this.children().every(function(child) { return child.isComplete(); });
+        },
+        run: function(fn) {
+            this._hasRun = true;
+            fn();
+        },
+        hasRun: function() {
+            return this._hasRun;
+        },
+        child: function(name) {
+            if (this._children[name])
+                return this._children[name];
+
+            return this._children[name] = new TestExecutionStatus(name);
+        },
+        children: function() {
+            return Object.keys(this._children)
+                .map(function(key) { return this._children[key];}, this);
+        }
+    };
+
     function TestAlreadyCompleteError (message) { this.message = message; }
+    function CannotInterceptExistingMethodError(message) { this.message = message; }
 
     var Basil = global.Basil = {
+        TestExecutionStatus: TestExecutionStatus,
+        TestRunner: TestRunner,
         NestedTest: NestedTest,
         Context: Context,
         TestAlreadyCompleteError: TestAlreadyCompleteError,

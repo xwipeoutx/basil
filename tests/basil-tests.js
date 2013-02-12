@@ -129,7 +129,7 @@
                     expect(context.children[0].name).to.equal("expect true to be true");
                 });
             });
-        })
+        });
 
         when("context throws an exception", function() {
             when("thrown value is an Error", function() {
@@ -211,7 +211,145 @@
                 _.when("inner throwing", function() { throw new Error("an Error")});
             }
         });
+    });
 
+    describe("TestRunner", function() {
+        var global = {};
+        var sut = new Basil.TestRunner(global);
+
+        when("intercepting calls to someMethod", function() {
+            sut.intercept('someMethod');
+            this.spy(sut, 'test');
+
+            then(function() { expect(global.someMethod).to.be.a('function');})
+
+            when("restoring method", function() {
+                sut.restore();
+
+                then(function() { expect(global.someMethod).to.be.undefined; });
+            });
+
+            when("calling intercepted method", function() {
+                when("with no arguments", function() {
+                    global.someMethod();
+                    then(function() { expect(sut.test).to.have.been.calledWith();});
+                    then(function() { expect(sut.test).to.have.been.calledOn(sut);});
+                });
+
+                when("with arguments", function() {
+                    global.someMethod('foo', 'bar');
+                    then(function() { expect(sut.test).to.have.been.calledWith('foo', 'bar');});
+                });
+            });
+        });
+
+        when("intercepting calls to an existing method", function() {
+            global.existingMethod = function() {};
+
+            then('throws an error', function() {
+                expect(function() {
+                    sut.intercept('existingMethod');
+                }).to.throw(Basil.CannotInterceptExistingMethodError);
+            });
+        });
+
+        when("test is called", function() {
+            sut.test("TestName", function innerFunction () {});
+
+            then("new context is created", function() {
+
+            });
+        });
+    });
+
+    describe("TestExecutionStatus", function() {
+        var sut = new Basil.TestExecutionStatus("status name");
+
+        then(function() {expect(sut.name()).to.equal("status name");});
+        then(function() {expect(sut.isComplete()).to.be.false;});
+        then(function() {expect(sut.hasRun()).to.be.false;});
+
+        when("it runs", function() {
+            var functionToRun = sinon.stub();
+            sut.run(functionToRun);
+
+            then(function() { expect(sut.hasRun()).to.be.true;})
+            then(function() { expect(functionToRun).to.have.been.calledOnce;})
+
+            when("no children", function() {
+                then(function(){expect(sut.isComplete()).to.be.true;});
+            });
+
+            when("single child", function() {
+                var child = sut.child("1st Child");
+
+                when("child is not complete", function() {
+                    child.isComplete = function() { return false; };
+                    then(function(){expect(sut.isComplete()).to.be.false;});
+                });
+
+                when("child is complete", function() {
+                    child.isComplete = function() { return true; };
+                    then(function(){expect(sut.isComplete()).to.be.true;});
+                });
+            });
+
+            when("multiple children", function() {
+                var child1 = sut.child("1st Child");
+                var child2 = sut.child("2nd Child");
+
+                when("no children are complete", function() {
+                    child1.isComplete = child2.isComplete = function() { return false; };
+                    then(function(){expect(sut.isComplete()).to.be.false;});
+                });
+
+                when("only 1st child is complete", function() {
+                    child1.isComplete = function() { return true; };
+                    child2.isComplete = function() { return false; };
+                    then(function(){expect(sut.isComplete()).to.be.false;});
+                });
+
+                when("only both children are complete", function() {
+                    child1.isComplete = function() { return true; };
+                    child2.isComplete = function() { return true; };
+                    then(function(){expect(sut.isComplete()).to.be.true;});
+                });
+            });
+        });
+
+        when("adding a child", function() {
+            var child = sut.child("1st Child");
+
+            then(function() {expect(child.name()).to.equal("1st Child");});
+            then(function() {expect(sut.children()).to.deep.equal([child]);});
+
+            when("retrieving a child with the same name", function() {
+                var retrievedChild = sut.child("1st Child");
+
+                then(function() { expect(retrievedChild).to.equal(child);});
+            });
+
+            when("adding another child", function() {
+                var child2 = sut.child("2nd Child");
+
+                then(function() { expect(child2.name()).to.equal("2nd Child");});
+                then(function() {expect(sut.children()).to.deep.equal([child, child2]);});
+
+                when("getting child 1", function() {
+                    var retrieved = sut.child("1st Child");
+                    then(function() { expect(retrieved).to.equal(child);});
+                });
+
+                when("getting child 2", function() {
+                    var retrieved = sut.child("2nd Child");
+                    then(function() { expect(retrieved).to.equal(child2);});
+                });
+            });
+        });
+
+        when("no children", function() {
+
+        });
     });
 
     var firstDescribeThis;
@@ -223,6 +361,5 @@
 
         then(function() { expect(this).to.equal(thisForCurrentDescribe); });
         then(function() { expect(this).to.not.equal(firstDescribeThis); });
-
-    })
+    });
 })();
