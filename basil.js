@@ -142,6 +142,8 @@
         this._global = global;
         this._callback = callback;
         this._intercepted = [];
+        this._isPaused = false;
+        this._interceptQueue = [];
     }
 
     Interceptor.prototype = {
@@ -160,14 +162,29 @@
             this._intercepted.length = 0;
         },
 
-        _handleIntercept: function(name, fn) {
-            this._callback(name, fn);
+        _handleIntercept: function(variableArgs) {
+            var args = arguments;
+            if (!this._isPaused)
+                this._callback.apply(this, args);
+            else {
+                this._interceptQueue.push((function() { this._callback.apply(this, args); }).bind(this));
+            }
+        },
+
+        pause: function() {
+            this._isPaused = true;
+        },
+
+        resume: function() {
+            this._isPaused = false;
+
+            this._interceptQueue.forEach(function(fn) {fn();});
+            this._interceptQueue.length = 0;
         }
     };
 
     function TestRunner () {
         this._notifyRootCompleted = [];
-        this._testQueue = [];
     }
 
     TestRunner.prototype = {
@@ -178,10 +195,7 @@
             }
             var test = this._createTest(name);
 
-            if (!this._isPaused)
-                this._runTest(test, fn);
-            else
-                this._testQueue.push((function() { this._runTest(test, fn); }).bind(this));
+            this._runTest(test, fn);
 
             return test;
         },
@@ -240,17 +254,6 @@
 
         onRootTestCompleted: function(fn) {
             this._notifyRootCompleted.push(fn);
-        },
-
-        pause: function() {
-            this._isPaused = true;
-        },
-
-        resume: function() {
-            this._isPaused = false;
-
-            this._testQueue.forEach(function(test) {test();});
-            this._testQueue.length = 0;
         }
     };
 
