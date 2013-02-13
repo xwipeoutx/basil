@@ -18,6 +18,58 @@
 
     setFavIconElement(runningPassedIcon);
 
+    var baseTemplate =
+        '<div id="basil-header">'
+            + '<div id="basil-summary">'
+            + '<div>Total:<ul id="basil-totals"></ul></div>'
+            + '<div> Pass:<ul id="basil-passes"></ul></div>'
+            + '</div>'
+            + '<a id="basil-title"></a>'
+            + '<form method="get" id="basil-settings">'
+            + '<label>Filter <input type="text" id="basil-filter" name="filter"></label>'
+            + '<label><input type="checkbox" id="basil-hide-passed" name="hide-passed">Hide Passed</label>'
+            + '</form>'
+            + '</div>'
+            + '<div id="basil-results"></div>';
+
+    if(1) {
+        delete global.describe;
+        delete global.when;
+        delete global.then;
+        delete global.it;
+
+
+        var testRunner = new Basil.TestRunner(global);
+        testRunner.intercept('describe');
+        testRunner.intercept('when');
+        testRunner.intercept('then');
+        testRunner.intercept('it');
+
+        testRunner.onRootTestCompleted(onRootComplete);
+        testRunner.pause();
+
+        waitForBody();
+
+        function waitForBody() {
+            if (!document.body)
+                return setTimeout(waitForBody, 100);
+
+            setup();
+            testRunner.resume();
+        }
+
+
+        function onRootComplete(test) {
+            var resultsElement = document.getElementById('basil-results');
+            appendResults(resultsElement, [test]);
+        }
+
+        return;
+    }
+
+
+
+
     function describe (name, fn) {
         if (!document.body) {
             setTimeout(function() { describe(name, fn); }, 20);
@@ -57,19 +109,6 @@
         }
     }
 
-    var baseTemplate =
-        '<div id="basil-header">'
-            + '<div id="basil-summary">'
-            + '<div>Total:<ul id="basil-totals"></ul></div>'
-            + '<div> Pass:<ul id="basil-passes"></ul></div>'
-            + '</div>'
-            + '<a id="basil-title"></a>'
-            + '<form method="get" id="basil-settings">'
-            + '<label>Filter <input type="text" id="basil-filter" name="filter"></label>'
-            + '<label><input type="checkbox" id="basil-hide-passed" name="hide-passed">Hide Passed</label>'
-            + '</form>'
-            + '</div>'
-            + '<div id="basil-results"></div>';
 
     function setup () {
         createBaseStructure();
@@ -117,57 +156,57 @@
         }
     }
 
-    function appendResults (el, contexts) {
-        if (!contexts.length)
+    function appendResults (el, tests) {
+        if (!tests.length)
             return;
 
         var ul = document.createElement('ul');
-        contexts.forEach(function(context, i) {
-            var li = createLi(context);
-            appendResults(li, context.children);
+        tests.forEach(function(test, i) {
+            var li = createLi(test);
+            appendResults(li, test.children());
             ul.appendChild(li);
         });
 
         el.appendChild(ul);
     }
 
-    function createLi (context) {
-        var cssClass = getCssClass(context);
-        var caption = getCaption(context);
+    function createLi (test) {
+        var cssClass = getCssClass(test);
+        var caption = getCaption(test);
 
         var li = document.createElement('li');
         li.setAttribute('class', cssClass);
-        li.context = context;
+        li.context = test;
         li.innerHTML = caption;
 
-        if (context.children.length)
-            addExpandCollapse(li, context);
+        if (test.children.length)
+            addExpandCollapse(li, test);
 
-        if (context.failingFunction) {
-            addInspectionLink(li, context);
-            addViewCodeLink(li, context);
+        if (test.failingFunction) {
+            addInspectionLink(li, test);
+            addViewCodeLink(li, test);
         }
 
         return li;
     }
 
-    function addExpandCollapse (li, context, cssClass) {
+    function addExpandCollapse (li, test, cssClass) {
         li.addEventListener('click', function(event) {
             if (event.target != li)
                 return;
 
-            toggleCollapsed(context);
-            li.setAttribute('class', getCssClass(context));
+            toggleCollapsed(test);
+            li.setAttribute('class', getCssClass(test));
         });
     }
 
-    function isCollapsed (context) {
-        var key = 'basil-collapsed-' + context.fullName();
+    function isCollapsed (test) {
+        var key = 'basil-collapsed-' + test.name(); //NOCOMMIT full test name
         return !!localStorage[key];
     }
 
-    function toggleCollapsed (context) {
-        var key = 'basil-collapsed-' + context.fullName();
+    function toggleCollapsed (test) {
+        var key = 'basil-collapsed-' + test.name(); //NOCOMMIT full test name
         if (localStorage[key])
             delete localStorage[key];
         else
@@ -175,54 +214,54 @@
 
     }
 
-    function addInspectionLink (li, context) {
+    function addInspectionLink (li, test) {
         var a = document.createElement('a');
         a.innerHTML = " inspect";
         a.setAttribute('class', 'basil-inspect');
         a.setAttribute('href', '#');
 
-        var inspect = context.failingFunction.bind(context.failingScope);
-        addInspectListener(a, inspect);
+        addInspectListener(a, test.inspect);
 
         li.appendChild(a);
     }
 
-    function addInspectListener (a, stepInHere) {
+    function addInspectListener (a, inspect) {
         a.addEventListener('click', function(event) {
             event.preventDefault();
             debugger;
-            stepInHere();
+            inspect();
         });
     }
 
-    function addViewCodeLink (li, context) {
+    function addViewCodeLink (li, test) {
         var checkbox = document.createElement('input');
         checkbox.setAttribute('type', 'checkbox');
         checkbox.setAttribute('class', 'toggle-fail-code');
 
         var code = document.createElement('span');
-        code.innerHTML = context.failingFunction.toString().split("\n").slice(1, -1).join("\n");
+        code.innerHTML = test.inspect.toString().split("\n").slice(1, -1).join("\n");
         code.setAttribute('class', 'fail-code');
 
         li.appendChild(checkbox);
         li.appendChild(code);
     }
 
-    function getCssClass (context) {
-        var cssClass = context.passed === true ? 'is-passed'
-            : context.passed === false ? 'is-failed'
+    function getCssClass (test) {
+        var cssClass = test.isComplete()
+            ? (test.hasPassed() ? 'is-passed' : 'is-failed')
             : 'is-not-run';
 
-        cssClass += context.children.length ? ' basil-parent' : ' basil-leaf';
+        cssClass += test.children().length ? ' basil-parent' : ' basil-leaf';
 
-        if (isCollapsed(context))
+        if (isCollapsed(test))
             cssClass += ' is-collapsed';
         return cssClass;
     }
 
-    function getCaption (context) {
-        var errorString = context.error ? ('(' + context.error.toString() + ')') : '';
-        return context.name + " " + errorString;
+    function getCaption (test) {
+        var error = test.error();
+        var errorString = error ? ('(' + error.toString() + ')') : '';
+        return test.name() + " " + errorString;
     }
 
     function updateIconAndTitle() {
@@ -254,8 +293,8 @@
         favIcon.href = url;
     }
 
-    function updateTotals (context) {
-        calculateTotals([context], 0);
+    function updateTotals (test) {
+        calculateTotals([test], 0);
 
         updateTotalsNode(document.getElementById('basil-totals'), totalCounts);
         updateTotalsNode(document.getElementById('basil-passes'), totalPasses);
@@ -286,9 +325,11 @@
         });
     }
 
-    var nursery = document.createElement('div');
-
+    var nursery;
     function createDom (html) {
+        if (!nursery)
+            nursery = document.createElement('div');
+
         nursery.innerHTML = html;
         var elements = [];
 
