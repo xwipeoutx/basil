@@ -38,15 +38,30 @@
         delete global.then;
         delete global.it;
 
+        var testRunner = new Basil.TestRunner();
 
-        var testRunner = new Basil.TestRunner(global);
-        testRunner.intercept('describe');
-        testRunner.intercept('when');
-        testRunner.intercept('then');
-        testRunner.intercept('it');
+        var filterIsFine = false;
+        function filteringIntercept(name, fn) {
+            if(filterIsFine)
+                return testRunner.test(name, fn);
+
+            var filter = param('filter');
+            if (filter && name.toLowerCase().indexOf(filter.toLowerCase()) == -1)
+                return;
+
+            filterIsFine = true;
+            testRunner.test(name, fn);
+            filterIsFine = false;
+        }
+
+        var interceptor = new Basil.Interceptor(global, filteringIntercept);
+        interceptor.intercept('describe');
+        interceptor.intercept('when');
+        interceptor.intercept('then');
+        interceptor.intercept('it');
 
         testRunner.onRootTestCompleted(onRootComplete);
-        testRunner.pause();
+        interceptor.pause();
 
         waitForBody();
 
@@ -55,7 +70,7 @@
                 return setTimeout(waitForBody, 10);
 
             setup();
-            testRunner.resume();
+            interceptor.resume();
         }
 
 
