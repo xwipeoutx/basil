@@ -287,7 +287,6 @@
             });
 
             then(function() { expect(result.isComplete()).to.be.true; });
-            if(0)
             then(function() { expect(result.runCount()).to.equal(2); });
             then(function() { expect(result.children()).to.deep.equal([innerResult, innerResult2]); });
         });
@@ -301,6 +300,7 @@
             });
 
             then(function() { expect(result.isComplete()).to.be.true; });
+            then(function() { expect(result.runCount()).to.equal(3); });
             then(function() { expect(result.children()).to.deep.equal([innerResult, innerResult2, innerResult3]); });
         });
 
@@ -314,6 +314,7 @@
             });
 
             then(function() { expect(result.isComplete()).to.be.true; });
+            then(function() { expect(result.runCount()).to.equal(2); });
             then(function() { expect(result.children()).to.deep.equal([innerResult]); });
             then(function() { expect(innerResult.children()).to.deep.equal([innerInnerResult, innerInnerResult2]); });
         });

@@ -173,8 +173,10 @@
         _runRoot: function(name, fn) {
             var status = new TestExecutionStatus(name);
 
-            while(!status.isComplete())
+            while(!status.isComplete()) {
+                this._shouldStop = false;
                 this._testPass(status, fn)
+            }
 
             return status;
         },
@@ -185,12 +187,14 @@
         },
 
         _testPass: function(status, fn) {
-            if (status.isComplete())
-                return;
+            if (status.isComplete() || this._shouldStop)
+                return status;
 
             var parentStatus = this._outerStatus;
             this._outerStatus = status;
             status.run(fn);
+            if (status.isComplete())
+                this._shouldStop = true;
             this._outerStatus = parentStatus;
             return status;
         }
