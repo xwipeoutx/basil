@@ -240,6 +240,34 @@
                     then(function() { expect(destination).to.have.been.calledWith('foo', 'bar');});
                 });
             });
+
+            when("being told to pause", function() {
+                sut.pause();
+
+                when("calling intercepted method", function() {
+                    global.someMethod('arg for first call');
+
+                    then(function() { expect(destination).to.not.have.been.called; });
+
+                    when("resuming", function() {
+                        sut.resume();
+                        then(function() { expect(destination).to.have.been.calledWith('arg for first call'); });
+                    });
+
+                    when("calling intercepted method again", function() {
+                        global.someMethod('arg for second call');
+                        then(function() { expect(destination).to.not.have.been.called; });
+
+                        when("resuming", function() {
+                            sut.resume();
+
+                            then(function() { expect(destination).to.have.been.calledTwice; });
+                            then(function() { expect(destination).to.have.been.calledWith('arg for first call'); });
+                            then(function() { expect(destination).to.have.been.calledWith('arg for second call'); });
+                        });
+                    });
+                });
+            });
         });
 
         when("intercepting calls to an existing method", function() {
@@ -380,34 +408,6 @@
             });
         });
 
-        when("being told to pause", function() {
-            sut.pause();
-
-            when("running test", function() {
-                var testFunction = sinon.stub();
-                var result = sut.test('test name', testFunction);
-
-                then(function() { expect(result.runCount()).to.equal(0); });
-
-                when("resuming", function() {
-                    sut.resume();
-                    then(function() { expect(result.runCount()).to.equal(1); });
-                });
-
-                when("running a second test", function() {
-                    var testFunction2 = sinon.stub();
-                    var result2 = sut.test('test name', testFunction2);
-                    then(function() { expect(result2.runCount()).to.equal(0); });
-
-                    when("resuming", function() {
-                        sut.resume();
-
-                        then(function() { expect(result.runCount()).to.equal(1); });
-                        then(function() { expect(result2.runCount()).to.equal(1); });
-                    });
-                });
-            });
-        });
     });
 
     describe("Test", function() {
