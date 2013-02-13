@@ -318,12 +318,14 @@
         });
     });
 
-    describe("TestExecutionStatus", function() {
-        var sut = new Basil.TestExecutionStatus("status name");
+    describe("Test", function() {
+        var sut = new Basil.Test("test name");
 
-        then(function() {expect(sut.name()).to.equal("status name");});
+        then(function() {expect(sut.name()).to.equal("test name");});
         then(function() {expect(sut.isComplete()).to.be.false;});
         then(function() {expect(sut.runCount()).to.equal(0);});
+        then(function() {expect(sut.hasPassed()).to.be.false;});
+        then(function() {expect(sut.error()).to.be.null;});
 
         when("it finishes running", function() {
             var functionToRun = sinon.stub();
@@ -331,6 +333,7 @@
 
             then(function() {expect(sut.runCount()).to.equal(1);});
             then(function() { expect(functionToRun).to.have.been.calledOnce;});
+            then(function() {expect(sut.hasPassed()).to.be.true;});
 
             when("no children", function() {
                 then(function() {expect(sut.isComplete()).to.be.true;});
@@ -410,6 +413,26 @@
                     then(function() { expect(retrieved).to.equal(child2);});
                 });
             });
+        });
+
+        when("run method throws an Error", function() {
+            var expectedError = new Error("ErrorText");
+            var failingFunction = function() { throw expectedError;}
+            sut.run(failingFunction);
+
+            then(function(){expect(sut.hasPassed()).to.be.false;});
+            then(function(){expect(sut.error()).to.equal(expectedError);});
+            then(function(){expect(sut.inspect).to.equal(failingFunction);});
+        });
+
+        when("run method throws a non-error", function() {
+            var expectedError = "ErrorText";
+            var failingFunction = function() { throw expectedError;}
+            sut.run(failingFunction);
+
+            then(function(){expect(sut.hasPassed()).to.be.false;});
+            then(function(){expect(sut.error().message).to.equal("ErrorText");});
+            then(function(){expect(sut.inspect).to.equal(failingFunction);});
         });
     });
 

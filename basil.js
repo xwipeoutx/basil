@@ -141,7 +141,6 @@
     function TestRunner (global) {
         this._global = global;
         this._intercepted = [];
-        this._currentStatus = null;
     }
 
     TestRunner.prototype = {
@@ -165,78 +164,99 @@
         },
 
         test: function(name, fn) {
-            return this._outerStatus
+            return this._outerTest
                 ? this._runChild(name, fn)
                 : this._runRoot(name, fn);
         },
 
         _runRoot: function(name, fn) {
-            var status = new TestExecutionStatus(name);
+            var test = new Test(name);
 
-            while(!status.isComplete()) {
+            while(!test.isComplete()) {
                 this._shouldStop = false;
-                this._testPass(status, fn);
+                this._testPass(test, fn);
             }
 
-            return status;
+            return test;
         },
 
         _runChild: function(name, fn) {
-            var status = this._outerStatus.child(name);
-            this._testPass(status, fn);
-            return status;
+            var test = this._outerTest.child(name);
+            this._testPass(test, fn);
+            return test;
         },
 
-        _testPass: function(status, fn) {
-            if (status.isComplete() || this._shouldStop)
-                return status;
+        _testPass: function(test, fn) {
+            if (test.isComplete() || this._shouldStop)
+                return test;
 
-            this._runTestFunction(status, fn);
+            this._runTestFunction(test, fn);
 
-            if (status.isComplete())
+            if (test.isComplete())
                 this._shouldStop = true;
 
-            return status;
+            return test;
         },
 
-        _runTestFunction: function(status, fn) {
-            var parentStatus = this._outerStatus;
-            this._outerStatus = status;
-            status.run(fn);
-            this._outerStatus = parentStatus;
+        _runTestFunction: function(test, fn) {
+            var outerTest = this._outerTest;
+            this._outerTest = test;
+            test.run(fn);
+            this._outerTest = outerTest;
         }
     };
 
-    function TestExecutionStatus (name) {
+    function Test (name) {
         this._name = name;
         this._runCount = 0;
         this._children = {};
+        this._error = null;
     }
 
-    TestExecutionStatus.prototype = {
+    Test.prototype = {
         name: function() {
             return this._name;
         },
+
         isComplete: function() {
             return this._runCount > 0
                 && this.children().every(function(child) { return child.isComplete(); });
         },
+
         run: function(fn) {
-            fn();
+            try {
+                fn();
+            } catch(error) {
+                if (!(error instanceof Error))
+                    error = new Error(error);
+                this._error = error;
+                this.inspect = fn;
+            }
             this._runCount++;
         },
+
         runCount: function() {
             return this._runCount;
         },
+
         child: function(name) {
             if (this._children[name])
                 return this._children[name];
 
-            return this._children[name] = new TestExecutionStatus(name);
+            return this._children[name] = new Test(name);
         },
+
         children: function() {
             return Object.keys(this._children)
                 .map(function(key) { return this._children[key];}, this);
+        },
+
+        hasPassed: function() {
+            return this.isComplete() && this._error == null;
+        },
+
+        error: function() {
+            return this._error;
         }
     };
 
@@ -245,7 +265,7 @@
     function CannotInterceptExistingMethodError (message) { this.message = message; }
 
     var Basil = global.Basil = {
-        TestExecutionStatus: TestExecutionStatus,
+        Test: Test,
         TestRunner: TestRunner,
         NestedTest: NestedTest,
         Context: Context,
