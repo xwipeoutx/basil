@@ -272,7 +272,8 @@
                 if (!(error instanceof Error))
                     error = new Error(error);
                 this._error = error;
-                this.inspect = fn.bind(thisValue);
+                this.inspect = fn;
+                this.inspectThisValue = thisValue;
             }
             this._runCount++;
         },
