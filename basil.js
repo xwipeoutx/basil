@@ -160,8 +160,8 @@
             this._intercepted.length = 0;
         },
 
-        _handleIntercept: function() {
-            this.test.apply(this, arguments);
+        _handleIntercept: function(name, fn) {
+            this.test(name, fn);
         },
 
         test: function(name, fn) {
@@ -175,7 +175,7 @@
 
             while(!status.isComplete()) {
                 this._shouldStop = false;
-                this._testPass(status, fn)
+                this._testPass(status, fn);
             }
 
             return status;
@@ -183,58 +183,28 @@
 
         _runChild: function(name, fn) {
             var status = this._outerStatus.child(name);
-            return this._testPass(status, fn);
+            this._testPass(status, fn);
+            return status;
         },
 
         _testPass: function(status, fn) {
             if (status.isComplete() || this._shouldStop)
                 return status;
 
+            this._runTestFunction(status, fn);
+
+            if (status.isComplete())
+                this._shouldStop = true;
+
+            return status;
+        },
+
+        _runTestFunction: function(status, fn) {
             var parentStatus = this._outerStatus;
             this._outerStatus = status;
             status.run(fn);
-            if (status.isComplete())
-                this._shouldStop = true;
             this._outerStatus = parentStatus;
-            return status;
         }
-
-        /*
-        test: function(name, fn) {
-            if (this._currentStatus == null)
-                return this._testUntilComplete(name, fn);
-            else
-                return this._runChildTest(name, fn);
-        },
-
-        _testUntilComplete: function(name, fn) {
-            var testStatus = new TestExecutionStatus(name);
-
-            while (!testStatus.isComplete())
-                this._testPass(testStatus, fn);
-
-            return testStatus;
-        },
-
-        _runChildTest: function(name, fn) {
-            return this._testPass(this._currentStatus.child(name), fn);
-        },
-
-        _testPass: function(status, fn) {
-            if (status.isComplete())
-                return status;
-
-            var parentStatus = this._currentStatus;
-            this._currentStatus = status;
-            try {
-                status.run(fn);
-            } finally {
-                this._currentStatus = parentStatus;
-            }
-
-            return status;
-        }
-        */
     };
 
     function TestExecutionStatus (name) {

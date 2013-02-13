@@ -217,10 +217,9 @@
         var global = {};
         var sut = new Basil.TestRunner(global);
 
-        if (0)
-            when("intercepting calls to someMethod", function() {
+            when("intercepting calls", function() {
                 sut.intercept('someMethod');
-                this.spy(sut, 'test');
+                sut.test = sinon.stub();
 
                 then(function() { expect(global.someMethod).to.be.a('function');})
 
@@ -233,7 +232,7 @@
                 when("calling intercepted method", function() {
                     when("with no arguments", function() {
                         global.someMethod();
-                        then(function() { expect(sut.test).to.have.been.calledWith();});
+                        then(function() { expect(sut.test).to.be.have.been.called;});
                         then(function() { expect(sut.test).to.have.been.calledOn(sut);});
                     });
 
@@ -244,7 +243,6 @@
                 });
             });
 
-        if (0)
             when("intercepting calls to an existing method", function() {
                 global.existingMethod = function() {};
 
