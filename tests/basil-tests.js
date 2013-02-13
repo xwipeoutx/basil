@@ -537,12 +537,26 @@
 
         when("run method throws an Error", function() {
             var expectedError = new Error("ErrorText");
-            var failingFunction = function() { throw expectedError;}
-            sut.run(failingFunction);
+            var failingFunctionAction = throwException;
+            var testFunction = function() { failingFunctionAction.call(this);}
+            var thisValue = {};
+            sut.run(testFunction, thisValue);
 
             then(function() {expect(sut.hasPassed()).to.be.false;});
             then(function() {expect(sut.error()).to.equal(expectedError);});
-            then(function() {expect(sut.inspect).to.equal(failingFunction);});
+
+            when("calling inspect function", function() {
+                var thisValueInInspect;
+                failingFunctionAction = captureThisValue;
+
+                sut.inspect();
+
+                then(function() { expect(thisValueInInspect).to.equal(thisValue);});
+
+                function captureThisValue() { thisValueInInspect = this; };
+            });
+
+            function throwException() { throw expectedError;}
         });
 
         when("run method throws a non-error", function() {
@@ -552,7 +566,6 @@
 
             then(function() {expect(sut.hasPassed()).to.be.false;});
             then(function() {expect(sut.error().message).to.equal("ErrorText");});
-            then(function() {expect(sut.inspect).to.equal(failingFunction);});
         });
     });
 
