@@ -293,7 +293,9 @@
         },
 
         hasPassed: function() {
-            return this.isComplete() && this._error == null;
+            return this.isComplete()
+                && this.children().every(function(childTest) { return childTest.hasPassed(); })
+                && this._error == null;
         },
 
         error: function() {

@@ -410,6 +410,16 @@
                 when("child is complete", function() {
                     child.isComplete = function() { return true; };
                     then(function() {expect(sut.isComplete()).to.be.true;});
+
+                    when("child has passed", function() {
+                        child.hasPassed = sinon.stub().returns(true);
+                        then(function(){expect(sut.hasPassed()).to.be.true;});
+                    });
+
+                    when("child has failed", function() {
+                        child.hasPassed = sinon.stub().returns(false);
+                        then(function(){expect(sut.hasPassed()).to.be.false;});
+                    });
                 });
             });
 
@@ -428,10 +438,28 @@
                     then(function() {expect(sut.isComplete()).to.be.false;});
                 });
 
-                when("only both children are complete", function() {
+                when("both children are complete", function() {
                     child1.isComplete = function() { return true; };
                     child2.isComplete = function() { return true; };
                     then(function() {expect(sut.isComplete()).to.be.true;});
+
+                    when("only child2 has passed", function() {
+                        child1.hasPassed = sinon.stub().returns(false);
+                        child2.hasPassed = sinon.stub().returns(true);
+                        then(function(){expect(sut.hasPassed()).to.be.false;});
+                    });
+
+                    when("only child1 has passed", function() {
+                        child1.hasPassed = sinon.stub().returns(true);
+                        child2.hasPassed = sinon.stub().returns(false);
+                        then(function(){expect(sut.hasPassed()).to.be.false;});
+                    });
+
+                    when("both children have passed", function() {
+                        child1.hasPassed = sinon.stub().returns(true);
+                        child2.hasPassed = sinon.stub().returns(true);
+                        then(function(){expect(sut.hasPassed()).to.be.true;});
+                    });
                 });
             });
         });
