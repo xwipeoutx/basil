@@ -1,8 +1,5 @@
 (function(global) {
-    var oldDescribe = global.describe;
-    global.describe = describe;
     var localStorage = global.localStorage || {};
-    var isSetup = false;
 
     var totalCounts = [];
     var totalPasses = [];
@@ -32,90 +29,62 @@
             + '</div>'
             + '<div id="basil-results"></div>';
 
-    if(1) {
-        delete global.describe;
-        delete global.when;
-        delete global.then;
-        delete global.it;
+    delete global.describe;
+    delete global.when;
+    delete global.then;
+    delete global.it;
 
-        var testRunner = new Basil.TestRunner();
+    var testRunner = new Basil.TestRunner();
 
-        var filterIsFine = false;
-        function filteringIntercept(name, fn) {
-            if(filterIsFine)
-                return testRunner.test(name, fn);
+    var filterIsFine = false;
 
-            var filter = param('filter');
-            if (filter && name.toLowerCase().indexOf(filter.toLowerCase()) == -1)
-                return;
-
-            filterIsFine = true;
-            testRunner.test(name, fn);
-            filterIsFine = false;
-        }
-
-        var interceptor = new Basil.Interceptor(global, filteringIntercept);
-        interceptor.intercept('describe');
-        interceptor.intercept('when');
-        interceptor.intercept('then');
-        interceptor.intercept('it');
-
-        testRunner.onRootTestCompleted(onRootComplete);
-        interceptor.pause();
-
-        waitForBody();
-
-        function waitForBody() {
-            if (!document.body)
-                return setTimeout(waitForBody, 10);
-
-            setup();
-            interceptor.resume();
-        }
-
-
-        function onRootComplete(test) {
-            var resultsElement = document.getElementById('basil-results');
-            appendResults(resultsElement, [test]);
-            updateTotals(test);
-
-            if (!test.hasPassed()) {
-                hasFailed = true;
-                document.getElementById('basil-header').className = 'is-failed';
-            }
-
-            updateIconAndTitle();
-        }
-
-        return;
-    }
-
-    function describe (name, fn) {
-        if (!document.body) {
-            setTimeout(function() { describe(name, fn); }, 20);
-            return;
-        }
-
-        if (!isSetup) {
-            isSetup = true;
-            setup();
-        }
+    function filteringIntercept (name, fn) {
+        if (filterIsFine)
+            return testRunner.test(name, fn);
 
         var filter = param('filter');
         if (filter && name.toLowerCase().indexOf(filter.toLowerCase()) == -1)
             return;
 
-        var context = oldDescribe(name, fn);
-        appendResults(document.getElementById('basil-results'), [context]);
-        updateTotals(context);
+        filterIsFine = true;
+        testRunner.test(name, fn);
+        filterIsFine = false;
+    }
 
-        if (!context.passed) {
+    var interceptor = new Basil.Interceptor(global, filteringIntercept);
+    interceptor.intercept('describe');
+    interceptor.intercept('when');
+    interceptor.intercept('then');
+    interceptor.intercept('it');
+
+    testRunner.onRootTestCompleted(onRootComplete);
+    interceptor.pause();
+
+    waitForBody();
+
+    function waitForBody () {
+        if (!document.body)
+            return setTimeout(waitForBody, 10);
+
+        setup();
+        interceptor.resume();
+    }
+
+
+    function onRootComplete (test) {
+        var resultsElement = document.getElementById('basil-results');
+        appendResults(resultsElement, [test], 'basil');
+        updateTotals(test);
+
+        if (!test.hasPassed()) {
             hasFailed = true;
             document.getElementById('basil-header').className = 'is-failed';
         }
 
         updateIconAndTitle();
     }
+
+    return;
 
     function param (key) {
         var query = window.location.search.substring(1);
@@ -171,31 +140,34 @@
                     results.setAttribute('class', 'is-hiding-passed');
                 else
                     results.removeAttribute('class');
-            };
+            }
+
+            ;
         }
     }
 
-    function appendResults (el, tests) {
+    function appendResults (el, tests, parentFullName) {
         if (!tests.length)
             return;
 
         var ul = document.createElement('ul');
         tests.forEach(function(test, i) {
-            var li = createLi(test);
-            appendResults(li, test.children());
+            var li = createLi(test, parentFullName);
+            appendResults(li, test.children(), li.fullName);
             ul.appendChild(li);
         });
 
         el.appendChild(ul);
     }
 
-    function createLi (test) {
-        var cssClass = getCssClass(test);
+    function createLi (test, parentFullName) {
+        var fullName = parentFullName + ' ' + test.name();
         var caption = getCaption(test);
 
         var li = document.createElement('li');
-        li.setAttribute('class', cssClass);
-        li.context = test;
+        li.test = test;
+        li.fullName = fullName;
+        li.setAttribute('class', getCssClass(li));
         li.innerHTML = caption;
 
         if (test.children().length)
@@ -214,18 +186,18 @@
             if (event.target != li)
                 return;
 
-            toggleCollapsed(test);
-            li.setAttribute('class', getCssClass(test));
+            toggleCollapsed(li.fullName);
+            li.setAttribute('class', getCssClass(li));
         });
     }
 
-    function isCollapsed (test) {
-        var key = 'basil-collapsed-' + test.name(); //NOCOMMIT full test name
+    function isCollapsed (fullName) {
+        var key = 'basil-collapsed-' + fullName;
         return !!localStorage[key];
     }
 
-    function toggleCollapsed (test) {
-        var key = 'basil-collapsed-' + test.name(); //NOCOMMIT full test name
+    function toggleCollapsed (fullName) {
+        var key = 'basil-collapsed-' + fullName;
         if (localStorage[key])
             delete localStorage[key];
         else
@@ -265,14 +237,15 @@
         li.appendChild(code);
     }
 
-    function getCssClass (test) {
+    function getCssClass (li) {
+        var test = li.test;
         var cssClass = test.isComplete()
             ? (test.hasPassed() ? 'is-passed' : 'is-failed')
             : 'is-not-run';
 
         cssClass += test.children().length ? ' basil-parent' : ' basil-leaf';
 
-        if (isCollapsed(test))
+        if (isCollapsed(li.fullName))
             cssClass += ' is-collapsed';
         return cssClass;
     }
@@ -283,7 +256,7 @@
         return test.name() + " " + errorString;
     }
 
-    function updateIconAndTitle() {
+    function updateIconAndTitle () {
         if (favIconTimerId)
             clearTimeout(favIconTimerId);
 
@@ -299,7 +272,7 @@
                 setFavIconElement(failedIcon);
             else
                 setFavIconElement(passedIcon);
-            favIconTimerId=null;
+            favIconTimerId = null;
         }, 10);
     }
 
@@ -345,6 +318,7 @@
     }
 
     var nursery;
+
     function createDom (html) {
         if (!nursery)
             nursery = document.createElement('div');
