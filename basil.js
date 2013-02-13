@@ -265,14 +265,14 @@
                 && this.children().every(function(child) { return child.isComplete(); });
         },
 
-        run: function(fn, thisValue) {
+        run: function(fn, context) {
             try {
-                fn.call(thisValue);
+                fn.call(context);
             } catch(error) {
                 if (!(error instanceof Error))
                     error = new Error(error);
                 this._error = error;
-                this.inspect = fn.bind(thisValue);
+                this.inspect = fn;
             }
             this._runCount++;
         },
