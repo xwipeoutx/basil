@@ -138,14 +138,13 @@
         }
     };
 
-    function TestRunner (global) {
+    function Interceptor (global, callback) {
         this._global = global;
+        this._callback = callback;
         this._intercepted = [];
-        this._notifyRootCompleted = [];
-        this._testQueue = [];
     }
 
-    TestRunner.prototype = {
+    Interceptor.prototype = {
         intercept: function(methodName) {
             if (this._global[methodName])
                 throw new CannotInterceptExistingMethodError(methodName);
@@ -162,15 +161,22 @@
         },
 
         _handleIntercept: function(name, fn) {
-            this.test(name, fn);
-        },
+            this._callback(name, fn);
+        }
+    };
 
+    function TestRunner () {
+        this._notifyRootCompleted = [];
+        this._testQueue = [];
+    }
+
+    TestRunner.prototype = {
         test: function(name, fn) {
             if (typeof name == "function") {
                 fn = name;
                 name = this._extractName(fn);
             }
-            var test =  this._createTest(name);
+            var test = this._createTest(name);
 
             if (!this._isPaused)
                 this._runTest(test, fn);
@@ -206,13 +212,13 @@
         },
 
         _runUntilComplete: function(test, fn) {
-            while(!test.isComplete()) {
+            while (!test.isComplete()) {
                 this._shouldStop = false;
                 this._thisValue = {};
                 this._runOnce(test, fn);
             }
 
-            this._notifyRootCompleted.forEach(function(fn){ fn(test); });
+            this._notifyRootCompleted.forEach(function(fn) { fn(test); });
         },
 
         _runOnce: function(test, fn) {
@@ -243,7 +249,7 @@
         resume: function() {
             this._isPaused = false;
 
-            this._testQueue.forEach(function(test){test();});
+            this._testQueue.forEach(function(test) {test();});
             this._testQueue.length = 0;
         }
     };
@@ -268,7 +274,7 @@
         run: function(fn, thisValue) {
             try {
                 fn.call(thisValue);
-            } catch(error) {
+            } catch (error) {
                 if (!(error instanceof Error))
                     error = new Error(error);
                 this._error = error;
@@ -312,6 +318,7 @@
     var Basil = global.Basil = {
         Test: Test,
         TestRunner: TestRunner,
+        Interceptor: Interceptor,
         NestedTest: NestedTest,
         Context: Context,
         TestAlreadyCompleteError: TestAlreadyCompleteError,

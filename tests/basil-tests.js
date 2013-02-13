@@ -213,13 +213,13 @@
         });
     });
 
-    describe("TestRunner", function() {
+    describe("Intercepter", function() {
         var global = {};
-        var sut = new Basil.TestRunner(global);
+        var destination = sinon.stub();
+        var sut = new Basil.Interceptor(global, destination);
 
         when("intercepting calls", function() {
             sut.intercept('someMethod');
-            sut.test = sinon.stub();
 
             then(function() { expect(global.someMethod).to.be.a('function');})
 
@@ -232,13 +232,12 @@
             when("calling intercepted method", function() {
                 when("with no arguments", function() {
                     global.someMethod();
-                    then(function() { expect(sut.test).to.be.have.been.called;});
-                    then(function() { expect(sut.test).to.have.been.calledOn(sut);});
+                    then(function() { expect(destination).to.be.have.been.called;});
                 });
 
                 when("with arguments", function() {
                     global.someMethod('foo', 'bar');
-                    then(function() { expect(sut.test).to.have.been.calledWith('foo', 'bar');});
+                    then(function() { expect(destination).to.have.been.calledWith('foo', 'bar');});
                 });
             });
         });
@@ -252,6 +251,12 @@
                 }).to.throw(Basil.CannotInterceptExistingMethodError);
             });
         });
+
+    });
+
+    describe("TestRunner", function() {
+        var global = {};
+        var sut = new Basil.TestRunner();
 
         when("running empty test method", function() {
             var testFunction = sinon.stub();
