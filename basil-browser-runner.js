@@ -52,7 +52,7 @@
 
         function waitForBody() {
             if (!document.body)
-                return setTimeout(waitForBody, 100);
+                return setTimeout(waitForBody, 10);
 
             setup();
             testRunner.resume();
@@ -74,9 +74,6 @@
 
         return;
     }
-
-
-
 
     function describe (name, fn) {
         if (!document.body) {
@@ -116,7 +113,6 @@
             }
         }
     }
-
 
     function setup () {
         createBaseStructure();
@@ -187,7 +183,7 @@
         li.context = test;
         li.innerHTML = caption;
 
-        if (test.children.length)
+        if (test.children().length)
             addExpandCollapse(li, test);
 
         if (test.inspect) {
@@ -228,7 +224,7 @@
         a.setAttribute('class', 'basil-inspect');
         a.setAttribute('href', '#');
 
-        addInspectListener(a, test.inspect);
+        addInspectListener(a, test.inspect.bind(test.inspectThisValue));
 
         li.appendChild(a);
     }
