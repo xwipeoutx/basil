@@ -141,6 +141,8 @@
     function TestRunner (global) {
         this._global = global;
         this._intercepted = [];
+        this._notifyRootCompleted = [];
+        this._testQueue = [];
     }
 
     TestRunner.prototype = {
@@ -164,38 +166,45 @@
         },
 
         test: function(name, fn) {
-            return this._outerTest
-                ? this._runChild(name, fn)
-                : this._runRoot(name, fn);
+            var test =  this._createTest(name);
+
+            if (!this._isPaused)
+                this._runTest(test, fn);
+            else
+                this._testQueue.push((function() { this._runTest(test, fn); }).bind(this));
+
+            return test;
         },
 
-        _runRoot: function(name, fn) {
-            var test = new Test(name);
+        _createTest: function(name) {
+            return this._outerTest
+                ? this._outerTest.child(name)
+                : new Test(name);
+        },
 
+        _runTest: function(test, fn) {
+            this._outerTest
+                ? this._runOnce(test, fn)
+                : this._runUntilComplete(test, fn);
+        },
+
+        _runUntilComplete: function(test, fn) {
             while(!test.isComplete()) {
                 this._shouldStop = false;
-                this._testPass(test, fn);
+                this._runOnce(test, fn);
             }
 
-            return test;
+            this._notifyRootCompleted.forEach(function(fn){ fn(test); });
         },
 
-        _runChild: function(name, fn) {
-            var test = this._outerTest.child(name);
-            this._testPass(test, fn);
-            return test;
-        },
-
-        _testPass: function(test, fn) {
+        _runOnce: function(test, fn) {
             if (test.isComplete() || this._shouldStop)
-                return test;
+                return;
 
             this._runTestFunction(test, fn);
 
             if (test.isComplete())
                 this._shouldStop = true;
-
-            return test;
         },
 
         _runTestFunction: function(test, fn) {
@@ -203,6 +212,21 @@
             this._outerTest = test;
             test.run(fn);
             this._outerTest = outerTest;
+        },
+
+        onRootTestCompleted: function(fn) {
+            this._notifyRootCompleted.push(fn);
+        },
+
+        pause: function() {
+            this._isPaused = true;
+        },
+
+        resume: function() {
+            this._isPaused = false;
+
+            this._testQueue.forEach(function(test){test();});
+            this._testQueue.length = 0;
         }
     };
 

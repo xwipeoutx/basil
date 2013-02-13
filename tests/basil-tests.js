@@ -217,41 +217,41 @@
         var global = {};
         var sut = new Basil.TestRunner(global);
 
-            when("intercepting calls", function() {
-                sut.intercept('someMethod');
-                sut.test = sinon.stub();
+        when("intercepting calls", function() {
+            sut.intercept('someMethod');
+            sut.test = sinon.stub();
 
-                then(function() { expect(global.someMethod).to.be.a('function');})
+            then(function() { expect(global.someMethod).to.be.a('function');})
 
-                when("restoring method", function() {
-                    sut.restore();
+            when("restoring method", function() {
+                sut.restore();
 
-                    then(function() { expect(global.someMethod).to.be.undefined; });
-                });
-
-                when("calling intercepted method", function() {
-                    when("with no arguments", function() {
-                        global.someMethod();
-                        then(function() { expect(sut.test).to.be.have.been.called;});
-                        then(function() { expect(sut.test).to.have.been.calledOn(sut);});
-                    });
-
-                    when("with arguments", function() {
-                        global.someMethod('foo', 'bar');
-                        then(function() { expect(sut.test).to.have.been.calledWith('foo', 'bar');});
-                    });
-                });
+                then(function() { expect(global.someMethod).to.be.undefined; });
             });
 
-            when("intercepting calls to an existing method", function() {
-                global.existingMethod = function() {};
+            when("calling intercepted method", function() {
+                when("with no arguments", function() {
+                    global.someMethod();
+                    then(function() { expect(sut.test).to.be.have.been.called;});
+                    then(function() { expect(sut.test).to.have.been.calledOn(sut);});
+                });
 
-                then('throws an error', function() {
-                    expect(function() {
-                        sut.intercept('existingMethod');
-                    }).to.throw(Basil.CannotInterceptExistingMethodError);
+                when("with arguments", function() {
+                    global.someMethod('foo', 'bar');
+                    then(function() { expect(sut.test).to.have.been.calledWith('foo', 'bar');});
                 });
             });
+        });
+
+        when("intercepting calls to an existing method", function() {
+            global.existingMethod = function() {};
+
+            then('throws an error', function() {
+                expect(function() {
+                    sut.intercept('existingMethod');
+                }).to.throw(Basil.CannotInterceptExistingMethodError);
+            });
+        });
 
         when("running empty test method", function() {
             var result = sut.test("TestName", function() {});
@@ -315,6 +315,48 @@
             then(function() { expect(result.runCount()).to.equal(2); });
             then(function() { expect(result.children()).to.deep.equal([innerResult]); });
             then(function() { expect(innerResult.children()).to.deep.equal([innerInnerResult, innerInnerResult2]); });
+        });
+
+        when("listening for tests finishing", function() {
+            var stub = sinon.stub();
+            sut.onRootTestCompleted(stub);
+
+            var wasStubCalled;
+            var result = sut.test('someTest', function() {
+                wasStubCalled = stub.called;
+            });
+
+            then(function() { expect(wasStubCalled).to.be.false; });
+            then(function() { expect(stub).to.have.been.calledWith(result); })
+        });
+
+        when("being told to pause", function() {
+            sut.pause();
+
+            when("running test", function() {
+                var testFunction = sinon.stub();
+                var result = sut.test('test name', testFunction);
+
+                then(function() { expect(result.runCount()).to.equal(0); });
+
+                when("resuming", function() {
+                    sut.resume();
+                    then(function() { expect(result.runCount()).to.equal(1); });
+                });
+
+                when("running a second test", function() {
+                    var testFunction2 = sinon.stub();
+                    var result2 = sut.test('test name', testFunction2);
+                    then(function() { expect(result2.runCount()).to.equal(0); });
+
+                    when("resuming", function() {
+                        sut.resume();
+
+                        then(function() { expect(result.runCount()).to.equal(1); });
+                        then(function() { expect(result2.runCount()).to.equal(1); });
+                    });
+                });
+            });
         });
     });
 
@@ -420,9 +462,9 @@
             var failingFunction = function() { throw expectedError;}
             sut.run(failingFunction);
 
-            then(function(){expect(sut.hasPassed()).to.be.false;});
-            then(function(){expect(sut.error()).to.equal(expectedError);});
-            then(function(){expect(sut.inspect).to.equal(failingFunction);});
+            then(function() {expect(sut.hasPassed()).to.be.false;});
+            then(function() {expect(sut.error()).to.equal(expectedError);});
+            then(function() {expect(sut.inspect).to.equal(failingFunction);});
         });
 
         when("run method throws a non-error", function() {
@@ -430,9 +472,9 @@
             var failingFunction = function() { throw expectedError;}
             sut.run(failingFunction);
 
-            then(function(){expect(sut.hasPassed()).to.be.false;});
-            then(function(){expect(sut.error().message).to.equal("ErrorText");});
-            then(function(){expect(sut.inspect).to.equal(failingFunction);});
+            then(function() {expect(sut.hasPassed()).to.be.false;});
+            then(function() {expect(sut.error().message).to.equal("ErrorText");});
+            then(function() {expect(sut.inspect).to.equal(failingFunction);});
         });
     });
 
