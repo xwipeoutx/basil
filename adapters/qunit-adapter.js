@@ -56,10 +56,6 @@
         }, 100);
     };
 
-    global.when = function(name, fn) {
-        test(name, fn);
-    };
-
     function executeAll () {
         for (var moduleName in testsToRun) {
             var module = testsToRun[moduleName];
