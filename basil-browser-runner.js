@@ -84,8 +84,6 @@
         updateIconAndTitle();
     }
 
-    return;
-
     function param (key) {
         var query = window.location.search.substring(1);
         var vars = query.split('&');

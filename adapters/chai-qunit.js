@@ -13,7 +13,7 @@
         chai.assert(expression, message);
     });
     override('propEqual', function() {
-        chai.assert(false, '"propEqual" is  not supported for Chai-Basil bridge');
+        chai.assert(false, '"propEqual" is  not supported for Chai-QUnit bridge');
     });
 
     function qunitThrows(fn, expected, message) {
