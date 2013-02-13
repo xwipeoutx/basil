@@ -190,7 +190,7 @@
         if (test.children.length)
             addExpandCollapse(li, test);
 
-        if (test.failingFunction) {
+        if (test.inspect) {
             addInspectionLink(li, test);
             addViewCodeLink(li, test);
         }
