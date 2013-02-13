@@ -62,6 +62,14 @@
         function onRootComplete(test) {
             var resultsElement = document.getElementById('basil-results');
             appendResults(resultsElement, [test]);
+            updateTotals(test);
+
+            if (!test.hasPassed()) {
+                hasFailed = true;
+                document.getElementById('basil-header').className = 'is-failed';
+            }
+
+            updateIconAndTitle();
         }
 
         return;
@@ -300,18 +308,18 @@
         updateTotalsNode(document.getElementById('basil-passes'), totalPasses);
     }
 
-    function calculateTotals (results, level) {
-        if (!results.length)
+    function calculateTotals (tests, level) {
+        if (!tests.length)
             return;
 
         var currentTotalCount = totalCounts[level] || 0;
-        totalCounts[level] = currentTotalCount + results.length;
+        totalCounts[level] = currentTotalCount + tests.length;
 
         var currentPassCount = totalPasses[level] || 0;
-        var passingResults = results.filter(function(result) { return result.passed; });
+        var passingResults = tests.filter(function(test) { return test.hasPassed(); });
         totalPasses[level] = currentPassCount + passingResults.length;
 
-        results.forEach(function(result) { calculateTotals(result.children, level + 1);});
+        tests.forEach(function(test) { calculateTotals(test.children(), level + 1);});
     }
 
     function updateTotalsNode (listNode, totalCounts) {
