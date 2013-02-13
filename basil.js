@@ -166,6 +166,10 @@
         },
 
         test: function(name, fn) {
+            if (typeof name == "function") {
+                fn = name;
+                name = this._extractName(fn);
+            }
             var test =  this._createTest(name);
 
             if (!this._isPaused)
@@ -174,6 +178,19 @@
                 this._testQueue.push((function() { this._runTest(test, fn); }).bind(this));
 
             return test;
+        },
+
+        _extractName: function(fn) {
+            if (fn.name)
+                return fn.name;
+
+            var fnContents = fn.toString();
+
+            fnContents = /function.+\{([\s\S]+)\}\w*$/.exec(fnContents)[1];
+            if (fnContents == null)
+                return "(No Name)";
+
+            return fnContents.replace(/\W+/gi, ' ').trim();
         },
 
         _createTest: function(name) {

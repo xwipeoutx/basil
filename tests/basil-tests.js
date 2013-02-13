@@ -330,6 +330,24 @@
             then(function() { expect(stub).to.have.been.calledWith(result); })
         });
 
+        when("running a named test method without specifying a name", function() {
+            var result = sut.test(function NamedFunctionName () {});
+            then(function() { expect(result.name()).to.equal("NamedFunctionName"); });
+        });
+
+        when("running an unnamed test method without specifying a name", function() {
+            var result = sut.test(function () { expect('name').to.equal('name'); });
+            then(function() { expect(result.name()).to.equal("expect name to equal name"); });
+        });
+
+        when("running a named test method without specifying a name", function() {
+            var result = sut.test(function TestName () {});
+
+            then("name extracted from test name", function() {
+                expect(result.name()).to.equal("TestName");
+            });
+        });
+
         when("being told to pause", function() {
             sut.pause();
 
