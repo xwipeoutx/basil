@@ -208,6 +208,7 @@
         _runUntilComplete: function(test, fn) {
             while(!test.isComplete()) {
                 this._shouldStop = false;
+                this._thisValue = {};
                 this._runOnce(test, fn);
             }
 
@@ -227,7 +228,7 @@
         _runTestFunction: function(test, fn) {
             var outerTest = this._outerTest;
             this._outerTest = test;
-            test.run(fn);
+            test.run(fn, this._thisValue);
             this._outerTest = outerTest;
         },
 
@@ -264,9 +265,9 @@
                 && this.children().every(function(child) { return child.isComplete(); });
         },
 
-        run: function(fn) {
+        run: function(fn, context) {
             try {
-                fn();
+                fn.call(context);
             } catch(error) {
                 if (!(error instanceof Error))
                     error = new Error(error);

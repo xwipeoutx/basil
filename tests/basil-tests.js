@@ -254,39 +254,66 @@
         });
 
         when("running empty test method", function() {
-            var result = sut.test("TestName", function() {});
+            var testFunction = sinon.stub();
+            var result = sut.test("TestName", testFunction);
 
             then(function() { expect(result.isComplete()).to.be.true; });
             then(function() { expect(result.runCount()).to.equal(1); });
+            then(function() { expect(testFunction).to.not.have.been.calledOn(undefined); });
 
             when("running another empty test method", function() {
+                var testFunction2 = sinon.stub();
                 var result2 = sut.test("AnotherTestName", function() {});
                 then(function() { expect(result2.isComplete()).to.be.true; });
                 then(function() { expect(result2.runCount()).to.equal(1); });
+                then(function() { expect(testFunction2).to.not.have.been.calledOn(testFunction.firstCall.thisValue); });
             });
         });
 
         when("running a test method with an inner test method call", function() {
             var innerResult;
-            var result = sut.test("Outer Test", function() {
-                innerResult = sut.test("Inner Test", function() {});
-            });
+            var innerTestFunction = sinon.stub();
+            var testFunction = function() {
+                innerResult = sut.test("Inner Test", innerTestFunction);
+            };
+            testFunction = this.spy(testFunction);
+            var result = sut.test("Outer Test", testFunction);
 
             then(function() { expect(result.isComplete()).to.be.true; });
             then(function() { expect(result.runCount()).to.equal(1); });
             then(function() { expect(result.children()).to.deep.equal([innerResult]); });
+
+            then("inner function uses same 'this' value as outer", function() {
+                expect(innerTestFunction).to.have.been.calledOn(testFunction.firstCall.thisValue);
+            });
         });
 
         when("running a test method with 2 inner test method calls", function() {
             var innerResult, innerResult2;
-            var result = sut.test("Outer Test", function() {
-                innerResult = sut.test("Inner Test", function() {});
-                innerResult2 = sut.test("Inner Test 2", function() {});
-            });
+            var innerFunction1 = sinon.stub();
+            var innerFunction2 = sinon.stub();
+            var testFunction = function() {
+                innerResult = sut.test("Inner Test", innerFunction1);
+                innerResult2 = sut.test("Inner Test 2", innerFunction2);
+            };
+            testFunction = this.spy(testFunction);
+            var result = sut.test("Outer Test", testFunction);
 
             then(function() { expect(result.isComplete()).to.be.true; });
             then(function() { expect(result.runCount()).to.equal(2); });
             then(function() { expect(result.children()).to.deep.equal([innerResult, innerResult2]); });
+
+            then("each outer call has different 'this' values", function() {
+                expect(testFunction.firstCall.thisValue).to.not.equal(testFunction.secondCall.thisValue);
+            });
+
+            then("inner function 1 uses same 'this' value as first outer call", function() {
+                expect(innerFunction1).to.have.been.calledOn(testFunction.firstCall.thisValue);
+            });
+
+            then("inner function 2 uses same 'this' value as second outer call", function() {
+                expect(innerFunction2).to.have.been.calledOn(testFunction.secondCall.thisValue);
+            });
         });
 
         when("running a test method with 3 inner test method calls", function() {
@@ -336,7 +363,7 @@
         });
 
         when("running an unnamed test method without specifying a name", function() {
-            var result = sut.test(function () { expect('name').to.equal('name'); });
+            var result = sut.test(function() { expect('name').to.equal('name'); });
             then(function() { expect(result.name()).to.equal("expect name to equal name"); });
         });
 
@@ -413,12 +440,12 @@
 
                     when("child has passed", function() {
                         child.hasPassed = sinon.stub().returns(true);
-                        then(function(){expect(sut.hasPassed()).to.be.true;});
+                        then(function() {expect(sut.hasPassed()).to.be.true;});
                     });
 
                     when("child has failed", function() {
                         child.hasPassed = sinon.stub().returns(false);
-                        then(function(){expect(sut.hasPassed()).to.be.false;});
+                        then(function() {expect(sut.hasPassed()).to.be.false;});
                     });
                 });
             });
@@ -446,31 +473,36 @@
                     when("only child2 has passed", function() {
                         child1.hasPassed = sinon.stub().returns(false);
                         child2.hasPassed = sinon.stub().returns(true);
-                        then(function(){expect(sut.hasPassed()).to.be.false;});
+                        then(function() {expect(sut.hasPassed()).to.be.false;});
                     });
 
                     when("only child1 has passed", function() {
                         child1.hasPassed = sinon.stub().returns(true);
                         child2.hasPassed = sinon.stub().returns(false);
-                        then(function(){expect(sut.hasPassed()).to.be.false;});
+                        then(function() {expect(sut.hasPassed()).to.be.false;});
                     });
 
                     when("both children have passed", function() {
                         child1.hasPassed = sinon.stub().returns(true);
                         child2.hasPassed = sinon.stub().returns(true);
-                        then(function(){expect(sut.hasPassed()).to.be.true;});
+                        then(function() {expect(sut.hasPassed()).to.be.true;});
                     });
                 });
             });
         });
 
         when("it is running", function() {
-            var runCountValueDuringFunction;
-            var functionToRun = function() { runCountValueDuringFunction = sut.runCount(); };
+            var runCountValueDuringFunction, contextDuringFunction;
+            var passedInContext = {};
+            var functionToRun = function() {
+                runCountValueDuringFunction = sut.runCount();
+                contextDuringFunction = this;
+            };
 
-            sut.run(functionToRun);
+            sut.run(functionToRun, passedInContext);
 
             then(function() { expect(runCountValueDuringFunction).to.equal(0); });
+            then(function() { expect(contextDuringFunction).to.equal(passedInContext); });
         });
 
         when("adding a child", function() {
