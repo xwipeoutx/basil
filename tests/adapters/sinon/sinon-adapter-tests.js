@@ -34,3 +34,14 @@ describe("test failures", function() {
 
     })
 });
+
+describe("stubbing in one describe", function() {
+    window.foo = function() { return 'bar'; };
+    this.stub(window, 'foo');
+});
+
+describe("disappears in the next", function() {
+    expect(window.foo()).to.equal('bar');
+
+    delete(window.foo);
+});
