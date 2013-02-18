@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Your Test Title Here</title>
+    <link rel="stylesheet" href="../basil-browser-runner.css" />
+
+    <script type="text/javascript" src="lib/chai.js"></script>
+    <script type="text/javascript" src="lib/sinon-1.5.2.js"></script>
+    <script type="text/javascript" src="lib/sinon-chai.js"></script>
+
+    <script type="text/javascript" src="../basil.js"></script>
+    <script type="text/javascript" src="../basil-browser-runner.js"></script>
+    <script type="text/javascript" src="../adapters/sinon-adapter.js"></script>
+
+    <script>
+        window.expect = chai.expect;
+    </script>
+
+    <!-- Add your test files here -->
+    <script type="text/javascript">
+        describe("Basil up and running! Add your own tests now", function() {
+            expect(true).to.be.true;
+        });
+    </script>
+</head>
+<body>
+</body>
+</html>
