@@ -3,17 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <title>Sample Tests</title>
-    <script src="../basil.js"></script>
-    <script src="../basil-browser-runner.js"></script>
-    <link rel="stylesheet" href="../basil-browser-runner.css" />
+
 
     <script src="../tests/chai.js"></script>
+    <script src="../tests/sinon-1.5.2.js"></script>
 
-    <script src="sample-test-lib.js"></script>
+    <script src="../basil.js"></script>
+    <script src="../basil-browser-runner.js"></script>
+
+    <script src="../tests/sinon-chai.js"></script>
+    <script src="../adapters/sinon-adapter.js"></script>
+    <script src="../adapters/qunit-adapter.js"></script>
+    <script src="../adapters/chai-qunit.js"></script>
+
+    <link rel="stylesheet" href="../basil-browser-runner.css" />
 
     <script>
         window.expect = chai.expect;
     </script>
+
     <script src="sample-tests.js"></script>
 </head>
 <body>

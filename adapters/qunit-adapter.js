@@ -141,6 +141,12 @@
             return;
 
         var fixture = document.getElementById('qunit-fixture');
+        if (!fixture) {
+            fixture = document.createElement('div');
+            fixture.id = 'qunit-fixture';
+            document.body.appendChild(fixture);
+        }
+
         previousValue = previousValue || fixture.innerHTML;
         fixture.innerHTML = previousValue;
     }

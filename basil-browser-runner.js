@@ -29,11 +29,6 @@
             + '</div>'
             + '<div id="basil-results"></div>';
 
-    delete global.describe;
-    delete global.when;
-    delete global.then;
-    delete global.it;
-
     var testRunner = new Basil.TestRunner();
 
     var filterIsFine = false;
