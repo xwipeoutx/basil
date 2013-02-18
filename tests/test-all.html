@@ -2,23 +2,27 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>All tests (including compatibility - so expect failures because of QUnit adapter)</title>
+    <title>All tests (including compatibility - expect failures because of QUnit adapter)</title>
     <link rel="stylesheet" href="../basil-browser-runner.css" />
 
-    <script src="chai.js"></script>
-    <script src="sinon-1.5.2.js"></script>
-    <script src="sinon-chai.js"></script>
 
     <script src="../basil.js"></script>
     <script src="../basil-browser-runner.js"></script>
 
+    <script src="lib/chai.js"></script>
+    <script src="lib/sinon-1.5.2.js"></script>
+    <script src="lib/sinon-chai.js"></script>
+
+    <script src="../adapters/sinon-adapter.js"></script>
     <script src="../adapters/qunit-adapter.js"></script>
     <script src="../adapters/chai-qunit.js"></script>
-    <script src="../adapters/sinon-adapter.js"></script>
+
+    <link rel="stylesheet" href="../../basil-browser-runner.css" />
 
     <script>
         window.expect = chai.expect;
     </script>
+
     <script src="basil-tests.js"></script>
     <script src="adapters/qunit/qunit-package-tests.js"></script>
     <script src="adapters/qunit/qunit-adapter-tests.js"></script>
