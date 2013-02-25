@@ -37,7 +37,14 @@
 
                     when("resuming", function() {
                         sut.resume();
-                        then(function() { expect(destination).to.have.been.calledWith('arg for first call'); });
+
+                        then(function() {expect(destination).to.not.have.been.called; });
+
+                        when("some time has passed", function() {
+                            this.clock.tick(1);
+                            then(function() { expect(destination).to.have.been.calledWith('arg for first call'); });
+                        });
+
                     });
 
                     when("calling intercepted method again", function() {
@@ -46,6 +53,7 @@
 
                         when("resuming", function() {
                             sut.resume();
+                            this.clock.tick(1);
 
                             then(function() { expect(destination).to.have.been.calledTwice; });
                             then(function() { expect(destination).to.have.been.calledWith('arg for first call'); });

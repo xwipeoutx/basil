@@ -39,7 +39,7 @@
         resume: function() {
             this._isPaused = false;
 
-            this._interceptQueue.forEach(function(fn) {fn();});
+            this._interceptQueue.forEach(function(fn) { setTimeout(fn, 0); });
             this._interceptQueue.length = 0;
         }
     };
