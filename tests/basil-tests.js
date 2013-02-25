@@ -194,6 +194,38 @@
             });
         });
 
+        when("registering a root plugin", function() {
+            var pluginFunction = sinon.stub();
+            sut.registerRootPlugin(pluginFunction);
+
+            then(function() { expect(pluginFunction).to.not.have.been.called; });
+
+            when("plugin does not yield", function() {
+                it("throws", function() {
+                    expect(function() { sut.test("TestName", function() {}); }).to.throw();
+                });
+            });
+
+            when("plugin yields", function() {
+                pluginFunction.yields();
+                var result = sut.test("TestName", function() {});
+
+                then(function() { expect(pluginFunction).to.have.been.called; });
+                then(function() { expect(result.isComplete()).to.be.true; });
+            });
+
+            pluginFunction.yields();
+
+            when("registering a second root plugin", function() {
+                var pluginFunction2 = sinon.stub().yields();
+                sut.registerRootPlugin(pluginFunction2);
+
+                when("running test", function() {
+                    sut.test("TestName", function() {});
+                    then(function() {expect(pluginFunction2).to.have.been.calledBefore(pluginFunction);});
+                });
+            });
+        });
     });
 
     describe("Test", function() {

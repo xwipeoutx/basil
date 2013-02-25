@@ -46,6 +46,7 @@
 
     function TestRunner () {
         this._notifyRootCompleted = [];
+        this._rootPlugins = [];
     }
 
     TestRunner.prototype = {
@@ -83,7 +84,30 @@
         _runTest: function(test, fn) {
             this._outerTest
                 ? this._runOnce(test, fn)
-                : this._runUntilComplete(test, fn);
+                : this._runWithPlugins(this._rootPlugins, this._runUntilComplete.bind(this, test, fn), null);
+        },
+
+        _runWithPlugins: function(plugins, runFunction,  context) {
+            var hasDelegated = false;
+            var delegate = function() {
+                hasDelegated = true;
+                runFunction();
+            };
+            var i = plugins.length;
+
+            callback();
+
+            if (!hasDelegated)
+                throw new PluginDidNotDelegateError();
+
+            function callback() {
+                i--;
+                var plugin = i < 0
+                    ? delegate
+                    : plugins[i];
+
+                plugin(callback);
+            }
         },
 
         _runUntilComplete: function(test, fn) {
@@ -115,6 +139,10 @@
 
         onRootTestCompleted: function(fn) {
             this._notifyRootCompleted.push(fn);
+        },
+
+        registerRootPlugin: function(fn) {
+            this._rootPlugins.push(fn);
         }
     };
 
@@ -176,6 +204,8 @@
     };
 
     function CannotInterceptExistingMethodError (message) { this.message = message; }
+
+    function PluginDidNotDelegateError() { this.message = "A registered plugin did not delegate"; }
 
     global.Basil = {
         Test: Test,
