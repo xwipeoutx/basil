@@ -69,7 +69,6 @@
     });
 
     describe("TestRunner", function() {
-        var global = {};
         var sut = new Basil.TestRunner();
 
         when("running empty test method", function() {
@@ -224,6 +223,34 @@
                     sut.test("TestName", function() {});
                     then(function() {expect(pluginFunction2).to.have.been.calledBefore(pluginFunction);});
                 });
+            });
+        });
+
+        when("register a setup plugin", function() {
+            var pluginFunction = sinon.stub();
+            sut.registerSetupPlugin(pluginFunction);
+
+            then(function() { expect(pluginFunction).to.not.have.been.called; });
+
+            when("plugin does not yield", function() {
+                it("throws", function() {
+                    expect(function() { sut.test("TestName", function() {}); }).to.throw();
+                });
+            });
+
+            when("running 2 nested tests", function() {
+                pluginFunction.yields();
+                var innerTest1 = sinon.stub();
+                var innerTest2 = sinon.stub();
+
+                sut.test(function OuterTest() {
+                    sut.test("InnerTest1", innerTest1);
+                    sut.test("InnerTest2", innerTest2);
+                });
+
+                then(function(){ expect(pluginFunction).to.have.been.calledTwice;});
+                then(function(){ expect(innerTest1).to.have.been.calledOn(pluginFunction.firstCall.thisValue);});
+                then(function(){ expect(innerTest2).to.have.been.calledOn(pluginFunction.secondCall.thisValue);});
             });
         });
     });

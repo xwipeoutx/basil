@@ -47,6 +47,7 @@
     function TestRunner () {
         this._notifyRootCompleted = [];
         this._rootPlugins = [];
+        this._setupPlugins = [];
     }
 
     TestRunner.prototype = {
@@ -104,7 +105,7 @@
                 i--;
                 var plugin = i < 0
                     ? delegate
-                    : plugins[i];
+                    : plugins[i].bind(context);
 
                 plugin(callback);
             }
@@ -114,7 +115,8 @@
             while (!test.isComplete()) {
                 this._shouldStop = false;
                 this._thisValue = {};
-                this._runOnce(test, fn);
+
+                this._runWithPlugins(this._setupPlugins, this._runOnce.bind(this, test, fn), this._thisValue);
             }
 
             this._notifyRootCompleted.forEach(function(fn) { fn(test); });
@@ -143,6 +145,10 @@
 
         registerRootPlugin: function(fn) {
             this._rootPlugins.push(fn);
+        },
+
+        registerSetupPlugin: function(fn) {
+            this._setupPlugins.push(fn);
         }
     };
 
