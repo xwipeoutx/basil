@@ -162,19 +162,6 @@
             then(function() { expect(innerResult.children()).to.deep.equal([innerInnerResult, innerInnerResult2]); });
         });
 
-        when("listening for tests finishing", function() {
-            var stub = sinon.stub();
-            sut.onRootTestCompleted(stub);
-
-            var wasStubCalled;
-            var result = sut.test('someTest', function() {
-                wasStubCalled = stub.called;
-            });
-
-            then(function() { expect(wasStubCalled).to.be.false; });
-            then(function() { expect(stub).to.have.been.calledWith(result); })
-        });
-
         when("running a named test method without specifying a name", function() {
             var result = sut.test(function NamedFunctionName () {});
             then(function() { expect(result.name()).to.equal("NamedFunctionName"); });
@@ -226,6 +213,17 @@
             });
         });
 
+        when("root plugin callback returns", function() {
+            var callbackReturnValue;
+            var pluginFunction = function(cb) {
+                callbackReturnValue = cb();
+            };
+            sut.registerRootPlugin(pluginFunction);
+            var result = sut.test("TestName", function() {});
+
+            then(function() { expect(callbackReturnValue).to.equal(result); });
+        });
+
         when("register a setup plugin", function() {
             var pluginFunction = sinon.stub();
             sut.registerSetupPlugin(pluginFunction);
@@ -252,6 +250,17 @@
                 then(function(){ expect(innerTest1).to.have.been.calledOn(pluginFunction.firstCall.thisValue);});
                 then(function(){ expect(innerTest2).to.have.been.calledOn(pluginFunction.secondCall.thisValue);});
             });
+        });
+
+        when("setup plugin callback returns", function() {
+            var callbackReturnValue;
+            var pluginFunction = function(cb) {
+                callbackReturnValue = cb();
+            };
+            sut.registerSetupPlugin(pluginFunction);
+            var result = sut.test("TestName", function() {});
+
+            then(function() { expect(callbackReturnValue).to.be.null; });
         });
     });
 

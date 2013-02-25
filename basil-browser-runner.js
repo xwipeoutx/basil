@@ -52,7 +52,7 @@
     interceptor.intercept('then');
     interceptor.intercept('it');
 
-    testRunner.onRootTestCompleted(onRootComplete);
+    testRunner.registerRootPlugin(onRootComplete);
     interceptor.pause();
 
     waitForBody();
@@ -66,7 +66,8 @@
     }
 
 
-    function onRootComplete (test) {
+    function onRootComplete (runTest) {
+        var test = runTest();
         var resultsElement = document.getElementById('basil-results');
         appendResults(resultsElement, [test], 'basil');
         updateTotals(test);
@@ -77,6 +78,7 @@
         }
 
         updateIconAndTitle();
+        return test;
     }
 
     function param (key) {

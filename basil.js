@@ -45,7 +45,6 @@
     };
 
     function TestRunner () {
-        this._notifyRootCompleted = [];
         this._rootPlugins = [];
         this._setupPlugins = [];
     }
@@ -85,14 +84,15 @@
         _runTest: function(test, fn) {
             this._outerTest
                 ? this._runOnce(test, fn)
-                : this._runWithPlugins(this._rootPlugins, this._runUntilComplete.bind(this, test, fn), null);
+                : this._runWithPlugins(this._rootPlugins, this._runUntilComplete.bind(this, test, fn), test, null);
         },
 
-        _runWithPlugins: function(plugins, runFunction,  context) {
+        _runWithPlugins: function(plugins, runFunction, returnValue, context) {
             var hasDelegated = false;
             var delegate = function() {
                 hasDelegated = true;
                 runFunction();
+                return returnValue;
             };
             var i = plugins.length;
 
@@ -107,7 +107,7 @@
                     ? delegate
                     : plugins[i].bind(context);
 
-                plugin(callback);
+                return plugin(callback);
             }
         },
 
@@ -116,10 +116,8 @@
                 this._shouldStop = false;
                 this._thisValue = {};
 
-                this._runWithPlugins(this._setupPlugins, this._runOnce.bind(this, test, fn), this._thisValue);
+                this._runWithPlugins(this._setupPlugins, this._runOnce.bind(this, test, fn), null, this._thisValue);
             }
-
-            this._notifyRootCompleted.forEach(function(fn) { fn(test); });
         },
 
         _runOnce: function(test, fn) {
@@ -137,10 +135,6 @@
             this._outerTest = test;
             test.run(fn, this._thisValue);
             this._outerTest = outerTest;
-        },
-
-        onRootTestCompleted: function(fn) {
-            this._notifyRootCompleted.push(fn);
         },
 
         registerRootPlugin: function(fn) {
