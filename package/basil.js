@@ -39,13 +39,14 @@
         resume: function() {
             this._isPaused = false;
 
-            this._interceptQueue.forEach(function(fn) {fn();});
+            this._interceptQueue.forEach(function(fn) { setTimeout(fn, 0); });
             this._interceptQueue.length = 0;
         }
     };
 
     function TestRunner () {
-        this._notifyRootCompleted = [];
+        this._rootPlugins = [];
+        this._setupPlugins = [];
     }
 
     TestRunner.prototype = {
@@ -83,17 +84,40 @@
         _runTest: function(test, fn) {
             this._outerTest
                 ? this._runOnce(test, fn)
-                : this._runUntilComplete(test, fn);
+                : this._runWithPlugins(this._rootPlugins, this._runUntilComplete.bind(this, test, fn), test, null);
+        },
+
+        _runWithPlugins: function(plugins, runFunction, returnValue, context) {
+            var hasDelegated = false;
+            var delegate = function() {
+                hasDelegated = true;
+                runFunction();
+                return returnValue;
+            };
+            var i = plugins.length;
+
+            callback();
+
+            if (!hasDelegated)
+                throw new PluginDidNotDelegateError();
+
+            function callback() {
+                i--;
+                var plugin = i < 0
+                    ? delegate
+                    : plugins[i].bind(context);
+
+                return plugin(callback);
+            }
         },
 
         _runUntilComplete: function(test, fn) {
             while (!test.isComplete()) {
                 this._shouldStop = false;
                 this._thisValue = {};
-                this._runOnce(test, fn);
-            }
 
-            this._notifyRootCompleted.forEach(function(fn) { fn(test); });
+                this._runWithPlugins(this._setupPlugins, this._runOnce.bind(this, test, fn), null, this._thisValue);
+            }
         },
 
         _runOnce: function(test, fn) {
@@ -113,8 +137,12 @@
             this._outerTest = outerTest;
         },
 
-        onRootTestCompleted: function(fn) {
-            this._notifyRootCompleted.push(fn);
+        registerRootPlugin: function(fn) {
+            this._rootPlugins.push(fn);
+        },
+
+        registerSetupPlugin: function(fn) {
+            this._setupPlugins.push(fn);
         }
     };
 
@@ -176,6 +204,8 @@
     };
 
     function CannotInterceptExistingMethodError (message) { this.message = message; }
+
+    function PluginDidNotDelegateError() { this.message = "A registered plugin did not delegate"; }
 
     global.Basil = {
         Test: Test,

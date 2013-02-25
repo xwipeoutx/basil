@@ -52,7 +52,8 @@
     interceptor.intercept('then');
     interceptor.intercept('it');
 
-    testRunner.onRootTestCompleted(onRootComplete);
+    testRunner.registerRootPlugin(onRootComplete);
+    testRunner.registerSetupPlugin(setupDomFixture);
     interceptor.pause();
 
     waitForBody();
@@ -65,8 +66,37 @@
         interceptor.resume();
     }
 
+    function setupDomFixture(runTest) {
+        var domElement = null;
 
-    function onRootComplete (test) {
+        Object.defineProperty(this, 'dom', {
+            get: function() {
+                if (domElement != null)
+                    return domElement;
+
+                domElement = document.createElement('div');
+                domElement.style.position = 'absolute';
+                domElement.style.top = '10000px';
+                domElement.style.left = '10000px';
+                domElement.style.width = '10000px';
+                domElement.style.height = '10000px';
+                domElement.className = 'basil-temporary-dom-element';
+                document.body.appendChild(domElement);
+                return domElement;
+            }
+        });
+
+        var result = runTest();
+
+        if (domElement) {
+            document.body.removeChild(domElement);
+        }
+
+        return result;
+    }
+
+    function onRootComplete (runTest) {
+        var test = runTest();
         var resultsElement = document.getElementById('basil-results');
         appendResults(resultsElement, [test], 'basil');
         updateTotals(test);
@@ -77,6 +107,7 @@
         }
 
         updateIconAndTitle();
+        return test;
     }
 
     function param (key) {
@@ -85,7 +116,7 @@
         for (var i = 0; i < vars.length; i++) {
             var pair = vars[i].split('=');
             if (decodeURIComponent(pair[0]) == key) {
-                var value = pair[1].replace('+', ' ');
+                var value = pair[1].replace(/\+/g, ' ');
                 return decodeURIComponent(value);
             }
         }
