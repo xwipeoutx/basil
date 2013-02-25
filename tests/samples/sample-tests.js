@@ -106,6 +106,22 @@ describe("Failures", function() {
     });
 });
 
+describe("DOM fixture", function() {
+    it("provides an attached dom element", function() {
+        expect(this.dom).to.not.be.null;
+        this.dom.innerHTML = "set in the previous test";
+    });
+
+    it("uses a new element per setup", function() {
+        expect(this.dom.innerHTML).to.be.empty;
+    });
+
+    it("cleans up the dom element when done", function() {
+        var temporaryElements = document.querySelectorAll('.basil-temporary-dom-element');
+        expect(temporaryElements.length).to.equal(0);
+    });
+});
+
 module("QUnit Adapter");
 test("qunit style tests run", function() { });
 test("assertions are converted to their chai equivalent", function() {

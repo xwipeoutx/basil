@@ -53,6 +53,7 @@
     interceptor.intercept('it');
 
     testRunner.registerRootPlugin(onRootComplete);
+    testRunner.registerSetupPlugin(setupDomFixture);
     interceptor.pause();
 
     waitForBody();
@@ -65,6 +66,34 @@
         interceptor.resume();
     }
 
+    function setupDomFixture(runTest) {
+        var domElement = null;
+
+        Object.defineProperty(this, 'dom', {
+            get: function() {
+                if (domElement != null)
+                    return domElement;
+
+                domElement = document.createElement('div');
+                domElement.style.position = 'absolute';
+                domElement.style.top = '10000px';
+                domElement.style.left = '10000px';
+                domElement.style.width = '10000px';
+                domElement.style.height = '10000px';
+                domElement.className = 'basil-temporary-dom-element';
+                document.body.appendChild(domElement);
+                return domElement;
+            }
+        });
+
+        var result = runTest();
+
+        if (domElement) {
+            document.body.removeChild(domElement);
+        }
+
+        return result;
+    }
 
     function onRootComplete (runTest) {
         var test = runTest();
