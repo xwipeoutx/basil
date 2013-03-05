@@ -18,7 +18,7 @@
             when("calling intercepted method", function() {
                 when("with no arguments", function() {
                     global.someMethod();
-                    then(function() { expect(destination).to.be.have.been.called;});
+                    then(function() { expect(destination).to.have.been.called;});
                 });
 
                 when("with arguments", function() {
@@ -34,6 +34,17 @@
                     global.someMethod('arg for first call');
 
                     then(function() { expect(destination).to.not.have.been.called; });
+
+                    when("aborting", function() {
+                        sut.abort();
+
+                        when("resuming", function() {
+                            sut.resume();
+                            this.clock.tick(1);
+
+                            then(function() { expect(destination).to.not.have.been.called});
+                        });
+                    });
 
                     when("resuming", function() {
                         sut.resume();
@@ -60,6 +71,15 @@
                             then(function() { expect(destination).to.have.been.calledWith('arg for second call'); });
                         });
                     });
+                });
+            });
+
+            when("aborting", function() {
+                sut.abort();
+
+                when("calling intercepted method", function() {
+                    global.someMethod();
+                    then(function() { expect(destination).to.not.have.been.called;});
                 });
             });
         });

@@ -151,6 +151,9 @@
 
         function setupSettingsForm () {
             document.getElementById('basil-settings').setAttribute('action', document.location.href);
+            document.getElementById('basil-settings').addEventListener('submit', function() {
+                interceptor.abort();
+            });
 
             var filter = document.getElementById('basil-filter');
             filter.setAttribute('value', param('filter') || '');
@@ -173,8 +176,6 @@
                 else
                     results.removeAttribute('class');
             }
-
-            ;
         }
     }
 
