@@ -24,6 +24,8 @@
         },
 
         _handleIntercept: function(variableArgs) {
+            if (this._isAborted)
+                return;
             var args = arguments;
             if (!this._isPaused)
                 this._callback.apply(this, args);
@@ -38,9 +40,19 @@
 
         resume: function() {
             this._isPaused = false;
+            var self = this;
 
-            this._interceptQueue.forEach(function(fn) { setTimeout(fn, 0); });
+            this._interceptQueue.forEach(function(fn) {
+                setTimeout(function() {
+                    if (!self._isAborted)
+                        fn();
+                }, 0);
+            });
             this._interceptQueue.length = 0;
+        },
+
+        abort: function() {
+            this._isAborted = true;
         }
     };
 
@@ -101,7 +113,7 @@
             if (!hasDelegated)
                 throw new PluginDidNotDelegateError();
 
-            function callback() {
+            function callback () {
                 i--;
                 var plugin = i < 0
                     ? delegate
@@ -205,7 +217,7 @@
 
     function CannotInterceptExistingMethodError (message) { this.message = message; }
 
-    function PluginDidNotDelegateError() { this.message = "A registered plugin did not delegate"; }
+    function PluginDidNotDelegateError () { this.message = "A registered plugin did not delegate"; }
 
     global.Basil = {
         Test: Test,
