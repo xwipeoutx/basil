@@ -84,15 +84,24 @@ body {
     display: none;
 }
 
-.basil-parent:hover {
-    cursor: pointer;
-}
-
 /* Leaves */
 .basil-leaf {
     font-weight: normal;
     cursor: default;
     list-style: none;
+}
+
+/* Links */
+.basil-parent {
+    cursor: pointer;
+}
+.basil-test-apply-filter {
+    cursor: pointer;
+    opacity: 0.2;
+}
+.basil-test-apply-filter:hover {
+    opacity: 1;
+    color: hsl(200, 80%, 40%);
 }
 
 /* Test state */
@@ -163,4 +172,10 @@ li.is-failed:before {
 #basil-summary li {
     display: inline-block;
     height: 1em;
+}
+
+/* Input */
+#basil-filter {
+    width: 40em;
+    padding-left: 0.3em;
 }

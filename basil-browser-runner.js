@@ -31,19 +31,27 @@
 
     var testRunner = new Basil.TestRunner();
 
-    var filterIsFine = false;
+    var filterParts = (param('filter') || '')
+        .toLowerCase()
+        .split('>')
+        .filter(Boolean)
+        .map(function(filterPart) { return filterPart.trim();});
+    var testDepth = 0;
 
     function filteringIntercept (name, fn) {
-        if (filterIsFine)
+        if (typeof name == 'function' || !filterParts.length)
             return testRunner.test(name, fn);
 
-        var filter = param('filter');
-        if (filter && name.toLowerCase().indexOf(filter.toLowerCase()) == -1)
-            return;
+        var testKey = getTestKey(name);
 
-        filterIsFine = true;
-        testRunner.test(name, fn);
-        filterIsFine = false;
+        var isPartialMatch = testKey.indexOf(filterParts[testDepth] || '') > -1;
+        var isExactMatch = testKey === filterParts[testDepth];
+
+        if (isExactMatch || (isPartialMatch && testDepth == filterParts.length-1) || testDepth >= filterParts.length) {
+            testDepth++;
+            testRunner.test(name, fn);
+            testDepth--;
+        }
     }
 
     var interceptor = new Basil.Interceptor(global, filteringIntercept);
@@ -98,7 +106,7 @@
     function onRootComplete (runTest) {
         var test = runTest();
         var resultsElement = document.getElementById('basil-results');
-        appendResults(resultsElement, [test], 'basil');
+        appendResults(resultsElement, [test], '');
         updateTotals(test);
 
         if (!test.hasPassed()) {
@@ -170,29 +178,30 @@
         }
     }
 
-    function appendResults (el, tests, parentFullName) {
+    function appendResults (el, tests, parentTestKey) {
         if (!tests.length)
             return;
 
         var ul = document.createElement('ul');
         tests.forEach(function(test, i) {
-            var li = createLi(test, parentFullName);
-            appendResults(li, test.children(), li.fullName);
+            var li = createLi(test, parentTestKey);
+            appendResults(li, test.children(), li.testKey);
             ul.appendChild(li);
         });
 
         el.appendChild(ul);
     }
 
-    function createLi (test, parentFullName) {
-        var fullName = parentFullName + ' ' + test.name();
-        var caption = getCaption(test);
+    function createLi (test, parentTestKey) {
+        var testKey = getFullTestKey(test.name(), parentTestKey);
 
         var li = document.createElement('li');
         li.test = test;
-        li.fullName = fullName;
+        li.testKey = testKey;
+        li.innerHTML = getCaption(test);
         li.setAttribute('class', getCssClass(li));
-        li.innerHTML = caption;
+
+        addFilterLink(li, test);
 
         if (test.children().length)
             addExpandCollapse(li, test);
@@ -205,23 +214,46 @@
         return li;
     }
 
-    function addExpandCollapse (li, test, cssClass) {
+    function getFullTestKey(name, parentTestKey) {
+        var testKey = (parentTestKey + '>' + getTestKey(name));
+        return testKey.replace(/^>/,'');
+    }
+
+    function getTestKey(name) {
+        return name.toLowerCase().replace(/>/g, '');
+    }
+
+    function addFilterLink(li, test) {
+        var filterElement = document.createElement('span');
+        filterElement.setAttribute('class', 'basil-test-apply-filter');
+        filterElement.innerHTML = '&nbsp;➾';
+        filterElement.addEventListener('click', function(event) {
+            event.stopPropagation();
+
+            document.getElementById('basil-filter').value = li.testKey;
+            document.getElementById('basil-settings').submit();
+        });
+
+        li.appendChild(filterElement);
+    }
+
+    function addExpandCollapse (li, test) {
         li.addEventListener('click', function(event) {
             if (event.target != li)
                 return;
 
-            toggleCollapsed(li.fullName);
+            toggleCollapsed(li.testKey);
             li.setAttribute('class', getCssClass(li));
         });
     }
 
-    function isCollapsed (fullName) {
-        var key = 'basil-collapsed-' + fullName;
+    function isCollapsed (testKey) {
+        var key = 'basil-collapsed-' + testKey;
         return !!localStorage[key];
     }
 
-    function toggleCollapsed (fullName) {
-        var key = 'basil-collapsed-' + fullName;
+    function toggleCollapsed (testKey) {
+        var key = 'basil-collapsed-' + testKey;
         if (localStorage[key])
             delete localStorage[key];
         else
@@ -269,7 +301,7 @@
 
         cssClass += test.children().length ? ' basil-parent' : ' basil-leaf';
 
-        if (isCollapsed(li.fullName))
+        if (isCollapsed(li.testKey))
             cssClass += ' is-collapsed';
         return cssClass;
     }
