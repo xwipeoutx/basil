@@ -336,8 +336,11 @@
     function setFavIconElement (url) {
         var favIcon = document.getElementById('favIcon');
         if (!favIcon) {
-            document.head.innerHTML += '<link id="favIcon" rel="shortcut icon" type="image/x-icon"/>';
-            favIcon = document.getElementById('favIcon');
+            favIcon = document.createElement('link');
+            favIcon.id = 'favIcon';
+            favIcon.rel = 'shortcut icon';
+            favIcon.type = 'image/x-icon';
+            document.head.appendChild(favIcon);
         }
         favIcon.href = url;
     }
