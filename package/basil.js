@@ -1,4 +1,4 @@
-(function(global) {
+﻿(function(global) {
     function Interceptor (global, callback) {
         this._global = global;
         this._callback = callback;

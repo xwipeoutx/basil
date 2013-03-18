@@ -1,4 +1,4 @@
-(function(global) {
+﻿(function(global) {
     var localStorage = global.localStorage || {};
 
     var totalCounts = [];
@@ -81,6 +81,7 @@
                     return domElement;
 
                 domElement = document.createElement('div');
+                domElement.id = 'basil-temporary-dom-element';
                 domElement.style.position = 'absolute';
                 domElement.style.top = '10000px';
                 domElement.style.left = '10000px';
@@ -235,6 +236,7 @@
         filterElement.addEventListener('click', function(event) {
             event.stopPropagation();
 
+            interceptor.abort();
             document.getElementById('basil-filter').value = li.testKey;
             document.getElementById('basil-settings').submit();
         });
@@ -356,14 +358,14 @@
     function forceRender() {
         if (Date.now() - lastRenderTime < 250)
             return;
-        //document.body.clientWidth;
+        document.body.clientWidth;
         lastRenderTime = Date.now();
     }
 
     function setFavIconElement (url) {
         var favIcon = document.getElementById('favIcon');
         if (!favIcon) {
-            var favIcon = document.createElement('link');
+            favIcon = document.createElement('link');
             favIcon.id = 'favIcon';
             favIcon.rel = 'shortcut icon';
             favIcon.type = 'image/x-icon';
