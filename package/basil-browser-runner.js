@@ -13,8 +13,6 @@
     var runningPassedIcon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAIMSURBVBgZpcHNi05xGMfhz/07hzTDiKZmEmLYeM3iKTKUiFhY2EhZ2NjIBgsWYoUoSWr+B7NhY6GkJBRhYSMvJYRSFDPPi3N+9/01Z2Jvcl0mif9h+46PH92yrXXpe0f9EhCBIvBwFCIUyJ2QkDsewcDsuv3y5adTN67sHytbo61rs+b0p6E5zER/u+PXgLGyUyt1vk8yU91aiSmlXJw/uJKZOnzxPY1SChpVdgQohAcEIkJ4BJ6FZ+EKKhfLh+fh4TRKJBqWDJNQMmTCwkjJMEuYOVaIIhJlFo3ITiN5OI0EmBmWjCIZqTAsQZFgVlFw/tZuTt/cjIqaRnjQSAoxzYxGApIZKRlFYRQGKcGvXLF4cBXHxjdS5R4RTqOMcP4yM6ZJnLy+DSlTRabKmUULVrJqeCMTvTZ7x0ZYoKs0ylzXTDPDAEmYGTkqdq45hCvwcALx+cdH1i0eZbLq8qx7iPXnDswv5UGjAMQUM5Do5QpX8P7bG+rI5Kipvebnrwk2LNnKZN3h8bsH38qI4C8DjClm9HKP7JmhgaXkcFzBlx8fWDh3mOcfH/L47Qs6Tsv2HR8fH1qyaH+4Ex64OxHBz8Ej9KqKKip6uWLF4Go2jezi6YdH3H/1hGXdE7fvXD6zxyTxL9aeS+3W0u19917f/VQFOz5f0CummCT+xchZa3sUfd3wka8X9I4/fgON+TR7PCxMcAAAAABJRU5ErkJggg==';
     var runningFailedIcon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB90CBw0qMMQJoV8AAAIRSURBVDjLpZNPSFRRFMZ/575RLMsIJCU0UIwwN0EDVhYYQtjChYskaBH92UQrIYiI2lRSUC0E19FSiKBFELg1ixYt2khUSI4tFSxnnHnvnnNavBnbKl344HI4/M73ce8Rd+d/joxPzt48PVx8slbxVnfADDdDTXFzzA1XxdxxVdSMtuasvLj46/br5xMzheJQcbqppTV0tOxocGu5otPATKGSeaisbezY+mbmAaDg6jy61LdjwPXHP8kBbgCkUXHAzVEDwzFz1AyNnsuNVJ2ezr2oaQ6g/goSBHHHg+DiiAkhCCIBEUUSJ7FAIeb9FnNAaJACICJIEJIghESQAEmApiRhbuwCb8+O4kmWAzR3Htzq/0BkCxQkn54kQiIQAsQ0pb3/MG9OjhCrNawRoXGh7gAAd14Nj+HRsJgRY8b+vh46B49TLW8w0zuAXp3KATHLthwI4O6ICJZmDFy+iJtiquDOemmFrqFB0s0yx57d4OHUlX0Fr2dJAG9EcSemNdyU1W8/sJhhWYZmGbU/v+k+c4qsUmZpfn61YGb/ItSFCLFaRWOk7VAXphE3Y325xJ7OA5Tef+D7l88oWpTxydnZju6DE6aKqaGqmBknXtwiTWtYmhLTGu1H++k9N8LywgJfPy3w8drku7mn987j7tvSA9lVfjky6ncprNwhHGnUZbvrfF+ay5bIbtO0d8p9qVH/C58rTkV50AKSAAAAAElFTkSuQmCC'
 
-    setFavIconElement(runningPassedIcon);
-
     var baseTemplate =
         '<div id="basil-header">'
             + '<div id="basil-summary">'
@@ -111,10 +109,14 @@
 
         if (!test.hasPassed()) {
             hasFailed = true;
-            document.getElementById('basil-header').className = 'is-failed';
+            var header = document.getElementById('basil-header');
+            if (header.classList)
+                header.classList.add('is-failed');
+            else
+                header.className = 'is-failed';
         }
 
-        updateIconAndTitle();
+        updateRunStatus();
         return test;
     }
 
@@ -131,6 +133,8 @@
     }
 
     function setup () {
+        setFavIconElement(runningPassedIcon);
+
         createBaseStructure();
         setTitle();
         setupSettingsForm();
@@ -313,31 +317,57 @@
         return test.name() + " " + errorString;
     }
 
-    function updateIconAndTitle () {
+    function updateRunStatus () {
         if (favIconTimerId)
             clearTimeout(favIconTimerId);
 
         document.title = "[" + totalCounts[0] + "] " + originalTitle;
+        setRunning();
+        favIconTimerId = setTimeout(setNotRunning, 10);
+    }
 
+    function setRunning() {
+        var header = document.getElementById('basil-header')
+
+        if (header.classList)
+            header.classList.add('is-running');
         if (hasFailed)
             setFavIconElement(runningFailedIcon);
         else
             setFavIconElement(runningPassedIcon);
 
-        favIconTimerId = setTimeout(function() {
-            if (hasFailed)
-                setFavIconElement(failedIcon);
-            else
-                setFavIconElement(passedIcon);
-            favIconTimerId = null;
-        }, 10);
+        forceRender();
+    }
+
+    function setNotRunning() {
+        var header = document.getElementById('basil-header')
+
+        if (header.classList)
+            header.classList.remove('is-running');
+        if (hasFailed)
+            setFavIconElement(failedIcon);
+        else
+            setFavIconElement(passedIcon);
+        favIconTimerId = null;
+        forceRender();
+    }
+
+    var lastRenderTime = 0;
+    function forceRender() {
+        if (Date.now() - lastRenderTime < 250)
+            return;
+        //document.body.clientWidth;
+        lastRenderTime = Date.now();
     }
 
     function setFavIconElement (url) {
         var favIcon = document.getElementById('favIcon');
         if (!favIcon) {
-            document.head.innerHTML += '<link id="favIcon" rel="shortcut icon" type="image/x-icon"/>';
-            favIcon = document.getElementById('favIcon');
+            var favIcon = document.createElement('link');
+            favIcon.id = 'favIcon';
+            favIcon.rel = 'shortcut icon';
+            favIcon.type = 'image/x-icon';
+            document.head.appendChild(favIcon);
         }
         favIcon.href = url;
     }

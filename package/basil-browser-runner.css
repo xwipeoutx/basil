@@ -124,6 +124,10 @@ li.is-failed:before {
     font-size: small;
 }
 
+.is-running {
+    opacity: 0.3;
+}
+
 /* Code */
 .toggle-fail-code {
     cursor: pointer;
