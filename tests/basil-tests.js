@@ -1,103 +1,53 @@
 (function() {
-    describe("Intercepter", function() {
-        var global = {};
-        var destination = sinon.stub();
-        var sut = new Basil.Interceptor(global, destination);
-
-        when("intercepting calls", function() {
-            sut.intercept('someMethod');
-
-            then(function() { expect(global.someMethod).to.be.a('function');})
-
-            when("restoring method", function() {
-                sut.restore();
-
-                then(function() { expect(global.someMethod).to.be.undefined; });
-            });
-
-            when("calling intercepted method", function() {
-                when("with no arguments", function() {
-                    global.someMethod();
-                    then(function() { expect(destination).to.have.been.called;});
-                });
-
-                when("with arguments", function() {
-                    global.someMethod('foo', 'bar');
-                    then(function() { expect(destination).to.have.been.calledWith('foo', 'bar');});
-                });
-            });
-
-            when("being told to pause", function() {
-                sut.pause();
-
-                when("calling intercepted method", function() {
-                    global.someMethod('arg for first call');
-
-                    then(function() { expect(destination).to.not.have.been.called; });
-
-                    when("aborting", function() {
-                        sut.abort();
-
-                        when("resuming", function() {
-                            sut.resume();
-                            this.clock.tick(1);
-
-                            then(function() { expect(destination).to.not.have.been.called});
-                        });
-                    });
-
-                    when("resuming", function() {
-                        sut.resume();
-
-                        then(function() {expect(destination).to.not.have.been.called; });
-
-                        when("some time has passed", function() {
-                            this.clock.tick(1);
-                            then(function() { expect(destination).to.have.been.calledWith('arg for first call'); });
-                        });
-
-                    });
-
-                    when("calling intercepted method again", function() {
-                        global.someMethod('arg for second call');
-                        then(function() { expect(destination).to.not.have.been.called; });
-
-                        when("resuming", function() {
-                            sut.resume();
-                            this.clock.tick(1);
-
-                            then(function() { expect(destination).to.have.been.calledTwice; });
-                            then(function() { expect(destination).to.have.been.calledWith('arg for first call'); });
-                            then(function() { expect(destination).to.have.been.calledWith('arg for second call'); });
-                        });
-                    });
-                });
-            });
-
-            when("aborting", function() {
-                sut.abort();
-
-                when("calling intercepted method", function() {
-                    global.someMethod();
-                    then(function() { expect(destination).to.not.have.been.called;});
-                });
-            });
-        });
-
-        when("intercepting calls to an existing method", function() {
-            global.existingMethod = function() {};
-
-            it('throws an error', function() {
-                expect(function() {
-                    sut.intercept('existingMethod');
-                }).to.throw(Basil.CannotInterceptExistingMethodError);
-            });
-        });
-
-    });
-
     describe("TestRunner", function() {
         var sut = new Basil.TestRunner();
+
+        describe("interception", function() {
+            when("runner hasn't been started", function() {
+                when("test method is called", function() {
+                    var testFn = sinon.spy();
+                    sut.test(testFn);
+
+                    then(function() { expect(testFn).to.not.have.been.called; });
+
+                    when("runner is started", function() {
+                        sut.start();
+
+                        then(function() { expect(testFn).to.not.have.been.called; });
+
+                        when("after a timeout", function() {
+                            this.clock.tick(1);
+
+                            then(function() { expect(testFn).to.have.been.called; });
+                        });
+                    });
+                });
+            });
+
+            when("runner has been started", function() {
+                sut.start();
+
+                when("test method is called", function() {
+                    var testFn = sinon.spy();
+                    sut.test(testFn);
+
+                    then(function() { expect(testFn).to.have.been.called; });
+                });
+
+                when("runner has been aborted", function() {
+                    sut.abort();
+
+                    when("test method is called", function(){
+                        var testFn = sinon.spy();
+                        sut.test(testFn);
+
+                        then(function() { expect(testFn).to.not.have.been.called; });
+                    });
+                });
+            });
+        });
+
+        sut.start();
 
         describe("test methods", function() {
             when("running empty test method", function() {
@@ -211,14 +161,13 @@
         });
 
         describe("plugins", function() {
-            when("register a setup plugin", function() {
-                var pluginFunction = sinon.stub();
+            when("a setup plugin is registered", function() {
+                var pluginFunction = sinon.spy(function(test, fn, runTest) { runTest(test, fn); });
                 sut.registerSetupPlugin(pluginFunction);
 
                 then(function() { expect(pluginFunction).to.not.have.been.called; });
 
                 when("running 2 nested tests", function() {
-                    pluginFunction.yields();
                     var innerTest1 = sinon.stub();
                     var innerTest2 = sinon.stub();
 
@@ -230,6 +179,32 @@
                     then(function() { expect(pluginFunction).to.have.been.calledTwice;});
                     then(function() { expect(innerTest1).to.have.been.calledOn(pluginFunction.firstCall.thisValue);});
                     then(function() { expect(innerTest2).to.have.been.calledOn(pluginFunction.secondCall.thisValue);});
+                });
+            });
+
+            when("setup plugin runs invalid test", function() {
+                function pluginFunction(test, fn, runTest) { runTest({}, function() { }); }
+                sut.registerSetupPlugin(pluginFunction);
+
+                when("test is run", function() {
+                   var test = function() { sut.test('test', function() { }); };
+
+                    it("throws", function() {
+                        expect(test).to.throw(Basil.InvalidTestError);
+                    });
+                });
+            });
+
+            when("setup plugin runs non-function", function() {
+                function pluginFunction(test, fn, runTest) { runTest(test, {}); }
+                sut.registerSetupPlugin(pluginFunction);
+
+                when("test is run", function() {
+                    var test = function() { sut.test('test', function() { }); };
+
+                    it("throws", function() {
+                        expect(test).to.throw(); // Can't test for specific error type, because sinon throws its own error
+                    });
                 });
             });
         });

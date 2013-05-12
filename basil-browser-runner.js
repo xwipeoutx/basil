@@ -27,7 +27,7 @@
             + '</div>'
             + '<div id="basil-results"></div>';
 
-    var testRunner = new Basil.TestRunner();
+    var testRunner = global.basil = new Basil.TestRunner();
 
     var filterParts = (param('filter') || '')
         .toLowerCase()
@@ -52,15 +52,8 @@
         }
     }
 
-    var interceptor = new Basil.Interceptor(global, filteringIntercept);
-    interceptor.intercept('describe');
-    interceptor.intercept('when');
-    interceptor.intercept('then');
-    interceptor.intercept('it');
-
     testRunner.registerSetupPlugin(setupDomFixture);
     testRunner.registerSetupPlugin(onRootComplete);
-    interceptor.pause();
 
     waitForBody();
 
@@ -69,10 +62,10 @@
             return setTimeout(waitForBody, 10);
 
         setup();
-        interceptor.resume();
+        testRunner.start();
     }
 
-    function setupDomFixture(test, runTest) {
+    function setupDomFixture(test, fn, runTest) {
         var domElement = null;
 
         Object.defineProperty(this, 'dom', {
@@ -93,14 +86,14 @@
             }
         });
 
-        runTest();
+        runTest(test, fn);
 
         if (domElement)
             document.body.removeChild(domElement);
     }
 
-    function onRootComplete (test, runTest) {
-        runTest();
+    function onRootComplete (test, fn, runTest) {
+        runTest(test, fn);
 
         if (test.isComplete()){
             var resultsElement = document.getElementById('basil-results');

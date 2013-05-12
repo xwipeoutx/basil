@@ -6,10 +6,6 @@ sinon.config = {
     useFakeServer: false
 };
 
-(function (global) {
-    var oldDescribe = describe;
-
-    global.describe = function (testName, testFunction) {
-        return oldDescribe(testName, sinon.test(testFunction));
-    };
-}(this));
+Basil.TestRunner.prototype.registerSetupPlugin(function(test, fn, runTest) {
+    runTest(test, sinon.test(fn));
+});
