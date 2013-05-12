@@ -58,8 +58,8 @@
     interceptor.intercept('then');
     interceptor.intercept('it');
 
-    testRunner.registerRootPlugin(onRootComplete);
     testRunner.registerSetupPlugin(setupDomFixture);
+    testRunner.registerSetupPlugin(onRootComplete);
     interceptor.pause();
 
     waitForBody();
@@ -72,7 +72,7 @@
         interceptor.resume();
     }
 
-    function setupDomFixture(runTest) {
+    function setupDomFixture(test, runTest) {
         var domElement = null;
 
         Object.defineProperty(this, 'dom', {
@@ -93,31 +93,32 @@
             }
         });
 
-        var result = runTest();
+        runTest();
 
-        if (domElement) {
+        if (domElement)
             document.body.removeChild(domElement);
-        }
-
-        return result;
     }
 
-    function onRootComplete (runTest) {
-        var test = runTest();
-        var resultsElement = document.getElementById('basil-results');
-        appendResults(resultsElement, [test], '');
-        updateTotals(test);
+    function onRootComplete (test, runTest) {
+        runTest();
 
-        if (!test.hasPassed()) {
-            hasFailed = true;
-            var header = document.getElementById('basil-header');
-            if (header.classList)
-                header.classList.add('is-failed');
-            else
-                header.className = 'is-failed';
+        if (test.isComplete()){
+            var resultsElement = document.getElementById('basil-results');
+            appendResults(resultsElement, [test], '');
+            updateTotals(test);
+
+            if (!test.hasPassed()) {
+                hasFailed = true;
+                var header = document.getElementById('basil-header');
+                if (header.classList)
+                    header.classList.add('is-failed');
+                else
+                    header.className = 'is-failed';
+            }
+
+            updateRunStatus();
         }
 
-        updateRunStatus();
         return test;
     }
 

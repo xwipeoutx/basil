@@ -67,6 +67,7 @@
                 fn = name;
                 name = this._extractName(fn);
             }
+
             var test = this._createTest(name);
 
             this._runTest(test, fn);
@@ -95,51 +96,36 @@
 
         _runTest: function(test, fn) {
             this._outerTest
-                ? this._runOnce(test, fn)
-                : this._runWithPlugins(this._rootPlugins, this._runUntilComplete.bind(this, test, fn), test, null);
+                ? this._runSingleBranch(test, fn)
+                : this._runTree(test, fn);
         },
 
-        _runWithPlugins: function(plugins, runFunction, returnValue, context) {
-            var hasDelegated = false;
-            var delegate = function() {
-                hasDelegated = true;
-                runFunction();
-                return returnValue;
-            };
-            var i = plugins.length;
+        _runTree: function(test, fn) {
+            while (!test.isComplete()) {
+                this._branchHasBeenRun = false;
+                this._thisValue = {};
+
+                this._runWithPlugins(this._setupPlugins, this._runSingleBranch.bind(this, test, fn), test, this._thisValue);
+            }
+        },
+
+        _runWithPlugins: function(plugins, innerMostFunction, test, context) {
+            var functions = [innerMostFunction].concat(plugins);
 
             callback();
 
-            if (!hasDelegated)
-                throw new PluginDidNotDelegateError();
-
             function callback () {
-                i--;
-                var plugin = i < 0
-                    ? delegate
-                    : plugins[i].bind(context);
-
-                return plugin(callback);
+                functions.pop().call(context, test, callback);
             }
         },
 
-        _runUntilComplete: function(test, fn) {
-            while (!test.isComplete()) {
-                this._shouldStop = false;
-                this._thisValue = {};
-
-                this._runWithPlugins(this._setupPlugins, this._runOnce.bind(this, test, fn), null, this._thisValue);
-            }
-        },
-
-        _runOnce: function(test, fn) {
-            if (test.isComplete() || this._shouldStop)
+        _runSingleBranch: function(test, fn) {
+            if (test.isComplete() || this._branchHasBeenRun)
                 return;
 
             this._runTestFunction(test, fn);
 
-            if (test.isComplete())
-                this._shouldStop = true;
+            this._branchHasBeenRun = true;
         },
 
         _runTestFunction: function(test, fn) {

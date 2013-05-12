@@ -211,61 +211,11 @@
         });
 
         describe("plugins", function() {
-            when("registering a root plugin", function() {
-                var pluginFunction = sinon.stub();
-                sut.registerRootPlugin(pluginFunction);
-
-                then(function() { expect(pluginFunction).to.not.have.been.called; });
-
-                when("plugin does not yield", function() {
-                    it("throws", function() {
-                        expect(function() { sut.test("TestName", function() {}); }).to.throw();
-                    });
-                });
-
-                when("plugin yields", function() {
-                    pluginFunction.yields();
-                    var result = sut.test("TestName", function() {});
-
-                    then(function() { expect(pluginFunction).to.have.been.called; });
-                    then(function() { expect(result.isComplete()).to.be.true; });
-                });
-
-                pluginFunction.yields();
-
-                when("registering a second root plugin", function() {
-                    var pluginFunction2 = sinon.stub().yields();
-                    sut.registerRootPlugin(pluginFunction2);
-
-                    when("running test", function() {
-                        sut.test("TestName", function() {});
-                        then(function() {expect(pluginFunction2).to.have.been.calledBefore(pluginFunction);});
-                    });
-                });
-            });
-
-            when("root plugin callback returns", function() {
-                var callbackReturnValue;
-                var pluginFunction = function(cb) {
-                    callbackReturnValue = cb();
-                };
-                sut.registerRootPlugin(pluginFunction);
-                var result = sut.test("TestName", function() {});
-
-                then(function() { expect(callbackReturnValue).to.equal(result); });
-            });
-
             when("register a setup plugin", function() {
                 var pluginFunction = sinon.stub();
                 sut.registerSetupPlugin(pluginFunction);
 
                 then(function() { expect(pluginFunction).to.not.have.been.called; });
-
-                when("plugin does not yield", function() {
-                    it("throws", function() {
-                        expect(function() { sut.test("TestName", function() {}); }).to.throw();
-                    });
-                });
 
                 when("running 2 nested tests", function() {
                     pluginFunction.yields();
@@ -281,17 +231,6 @@
                     then(function() { expect(innerTest1).to.have.been.calledOn(pluginFunction.firstCall.thisValue);});
                     then(function() { expect(innerTest2).to.have.been.calledOn(pluginFunction.secondCall.thisValue);});
                 });
-            });
-
-            when("setup plugin callback returns", function() {
-                var callbackReturnValue;
-                var pluginFunction = function(cb) {
-                    callbackReturnValue = cb();
-                };
-                sut.registerSetupPlugin(pluginFunction);
-                var result = sut.test("TestName", function() {});
-
-                then(function() { expect(callbackReturnValue).to.be.null; });
             });
         });
     });
