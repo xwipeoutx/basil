@@ -162,10 +162,36 @@
 
         describe("plugins", function() {
             when("a setup plugin is registered", function() {
-                var pluginFunction = sinon.spy(function(test, fn, runTest) { runTest(test, fn); });
+                var pluginFunction = sinon.stub();
                 sut.registerSetupPlugin(pluginFunction);
 
                 then(function() { expect(pluginFunction).to.not.have.been.called; });
+
+                when("plugin does not yield", function() {
+                    it("throws", function() {
+                        expect(function() { sut.test("TestName", function() {}); }).to.throw();
+                    });
+                });
+
+                when("plugin yields", function() {
+                    pluginFunction.yields();
+                    var result = sut.test("TestName", function() {});
+
+                    then(function() { expect(pluginFunction).to.have.been.called; });
+                    then(function() { expect(result.isComplete()).to.be.true; });
+                });
+
+                pluginFunction.yields();
+
+                when("registering a second plugin", function() {
+                    var pluginFunction2 = sinon.stub().yields();
+                    sut.registerSetupPlugin(pluginFunction2);
+
+                    when("running test", function() {
+                        sut.test("TestName", function() {});
+                        then(function() {expect(pluginFunction2).to.have.been.calledBefore(pluginFunction);});
+                    });
+                });
 
                 when("running 2 nested tests", function() {
                     var innerTest1 = sinon.stub();
@@ -182,31 +208,35 @@
                 });
             });
 
-            when("setup plugin runs invalid test", function() {
-                function pluginFunction(test, fn, runTest) { runTest({}, function() { }); }
-                sut.registerSetupPlugin(pluginFunction);
+            when("a test plugin is registered", function() {
+                var pluginFunction = sinon.stub().yields();
+                sut.registerTestPlugin(pluginFunction);
 
-                when("test is run", function() {
-                   var test = function() { sut.test('test', function() { }); };
+                then(function() { expect(pluginFunction).to.not.have.been.called; });
 
-                    it("throws", function() {
-                        expect(test).to.throw(Basil.InvalidTestError);
+                when("running nested tests", function() {
+                    sut.test(function Outer() {
+                        sut.test(function Inner() { });
                     });
+
+                    then(function() { expect(pluginFunction).to.have.been.calledTwice; });
+                    then(function() { expect(pluginFunction.firstCall.args[1].name()).to.equal("Outer"); });
+                    then(function() { expect(pluginFunction.lastCall.args[1].name()).to.equal("Inner"); });
                 });
-            });
 
-            when("setup plugin runs non-function", function() {
-                function pluginFunction(test, fn, runTest) { runTest(test, {}); }
-                sut.registerSetupPlugin(pluginFunction);
+                when("running 2 nested tests", function() {
+                    sut.test(function Outer() {
+                        sut.test(function Inner1() { });
+                        sut.test(function Inner2() { });
+                    })
 
-                when("test is run", function() {
-                    var test = function() { sut.test('test', function() { }); };
-
-                    it("throws", function() {
-                        expect(test).to.throw(); // Can't test for specific error type, because sinon throws its own error
+                    then(function() { expect(pluginFunction.callCount).to.equal(4); });
+                    then("correct test are passed in", function() {
+                        var testNames = pluginFunction.args.map(function (args) { return args[1].name() });
+                        expect(testNames).to.contain.members(["Outer", "Inner1", "Outer", "Inner2"]);
                     });
-                });
-            });
+                })
+            })
         });
     });
 
@@ -309,6 +339,13 @@
             then(function() { expect(runCountValueDuringFunction).to.equal(0); });
             then(function() { expect(contextDuringFunction).to.equal(passedInContext); });
         });
+
+        when("it is skipped", function() {
+            sut.skip();
+
+            then(function() { expect(sut.isComplete()).to.be.true; });
+            then(function() { expect(sut.wasSkipped()).to.be.true; });
+        })
 
         when("adding a child", function() {
             var child = sut.child("1st Child");

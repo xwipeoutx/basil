@@ -65,7 +65,7 @@
         testRunner.start();
     }
 
-    function setupDomFixture(test, fn, runTest) {
+    function setupDomFixture(runTest) {
         var domElement = null;
 
         Object.defineProperty(this, 'dom', {
@@ -86,14 +86,14 @@
             }
         });
 
-        runTest(test, fn);
+        runTest();
 
         if (domElement)
             document.body.removeChild(domElement);
     }
 
-    function onRootComplete (test, fn, runTest) {
-        runTest(test, fn);
+    function onRootComplete (runTest, test) {
+        runTest();
 
         if (test.isComplete()){
             var resultsElement = document.getElementById('basil-results');

@@ -2,6 +2,7 @@
     function TestRunner () {
         this._rootPlugins = [];
         this._setupPlugins = this._setupPlugins.slice();
+        this._testPlugins = this._testPlugins.slice();
         this._testQueue = [];
         this._started = false;
         this.test = this.test.bind(this);
@@ -9,6 +10,7 @@
 
     TestRunner.prototype = {
         _setupPlugins: [],
+        _testPlugins: [],
 
         test: function(name, fn) {
             if (this._started)
@@ -58,9 +60,10 @@
 
             var test = this._createTest(name);
 
-            this._outerTest
-                ? this._runSingleBranch(test, fn)
-                : this._runTree(test, fn);
+            if (this._outerTest)
+                this._runSingleBranch(test, fn);
+            else
+                this._runTree(test, fn);
 
             return test;
         },
@@ -70,36 +73,36 @@
                 this._branchHasBeenRun = false;
                 this._thisValue = {};
 
-                this._runWithPlugins(this._runSingleBranch.bind(this), this._setupPlugins, this._thisValue)(test, fn);
-            }
-        },
-
-        _runWithPlugins: function(innerMostFunction, plugins, context) {
-            var functions = [innerMostFunction].concat(plugins);
-
-            return callback;
-
-            function callback () {
-                var args = Array.prototype.slice.call(arguments);
-                functions.pop().apply(context, args.concat(callback));
+                this._runWithPlugins(this._runSingleBranch.bind(this, test, fn), this._setupPlugins, this._thisValue, [test]);
             }
         },
 
         _runSingleBranch: function(test, fn) {
-            if (!(test instanceof Test))
-                throw new InvalidTestError(test);
-            if (typeof fn != "function")
-                throw new InvalidTestFunctionError(fn);
-
             if (test.isComplete() || this._branchHasBeenRun)
                 return;
 
-            this._runTestFunction(test, fn);
+            this._runWithPlugins(this._runTestFunction.bind(this, test, fn), this._testPlugins, this._thisValue, [test]);
 
             this._branchHasBeenRun = true;
         },
 
+        _runWithPlugins: function(innerMostFunction, plugins, context, args) {
+            var functions = [innerMostFunction].concat(plugins);
+
+            callback();
+
+            if (functions.length)
+                throw new PluginDidNotDelegateError();
+
+            function callback () {
+                functions.pop().apply(context, [callback].concat(args));
+            }
+        },
+
         _runTestFunction: function(test, fn) {
+            if (test.isComplete() || this._branchHasBeenRun)
+                return;
+
             var outerTest = this._outerTest;
             this._outerTest = test;
             test.run(fn, this._thisValue);
@@ -108,6 +111,10 @@
 
         registerSetupPlugin: function(fn) {
             this._setupPlugins.push(fn);
+        },
+
+        registerTestPlugin: function(fn) {
+            this._testPlugins.push(fn);
         }
     };
 
@@ -124,11 +131,15 @@
         },
 
         isComplete: function() {
-            return this._runCount > 0
-                && this.children().every(function(child) { return child.isComplete(); });
+            return this._skipped
+                || this._runCount > 0
+                    && this.children().every(function (child) { return child.isComplete(); });
         },
 
         run: function(fn, thisValue) {
+            if (this._skipped)
+                return;
+
             try {
                 fn.call(thisValue);
             } catch (error) {
@@ -139,6 +150,14 @@
                 this.inspectThisValue = thisValue;
             }
             this._runCount++;
+        },
+
+        skip: function() {
+            this._skipped = true;
+        },
+
+        wasSkipped: function() {
+            return this._skipped;
         },
 
         runCount: function() {
@@ -170,15 +189,11 @@
 
     function CannotInterceptExistingMethodError (message) { this.message = message; }
 
-    function InvalidTestError(test) { this.message = test + " is not a Basil.Test"; }
-
-    function InvalidTestFunctionError(fn) { this.message = fn + " is not a function"; }
+    function PluginDidNotDelegateError () { this.message = "A registered plugin did not delegate"; }
 
     global.Basil = {
         Test: Test,
         TestRunner: TestRunner,
-        CannotInterceptExistingMethodError: CannotInterceptExistingMethodError,
-        InvalidTestError: InvalidTestError,
-        InvalidTestFunctionError: InvalidTestFunctionError
+        CannotInterceptExistingMethodError: CannotInterceptExistingMethodError
     };
 })(this);
