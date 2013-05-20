@@ -10,10 +10,11 @@
     <script src="lib/sinon-chai.js"></script>
 
     <script src="../basil.js"></script>
-    <script src="../basil-browser-runner.js"></script>
     <script src="../adapters/sinon-adapter.js"></script>
+    <script src="../basil-browser-runner.js"></script>
 
     <script>
+        describe = when = then = it = basil.test;
         window.expect = chai.expect;
     </script>
     <script src="basil-tests.js"></script>

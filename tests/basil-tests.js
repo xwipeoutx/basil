@@ -1,103 +1,53 @@
 (function() {
-    describe("Intercepter", function() {
-        var global = {};
-        var destination = sinon.stub();
-        var sut = new Basil.Interceptor(global, destination);
-
-        when("intercepting calls", function() {
-            sut.intercept('someMethod');
-
-            then(function() { expect(global.someMethod).to.be.a('function');})
-
-            when("restoring method", function() {
-                sut.restore();
-
-                then(function() { expect(global.someMethod).to.be.undefined; });
-            });
-
-            when("calling intercepted method", function() {
-                when("with no arguments", function() {
-                    global.someMethod();
-                    then(function() { expect(destination).to.have.been.called;});
-                });
-
-                when("with arguments", function() {
-                    global.someMethod('foo', 'bar');
-                    then(function() { expect(destination).to.have.been.calledWith('foo', 'bar');});
-                });
-            });
-
-            when("being told to pause", function() {
-                sut.pause();
-
-                when("calling intercepted method", function() {
-                    global.someMethod('arg for first call');
-
-                    then(function() { expect(destination).to.not.have.been.called; });
-
-                    when("aborting", function() {
-                        sut.abort();
-
-                        when("resuming", function() {
-                            sut.resume();
-                            this.clock.tick(1);
-
-                            then(function() { expect(destination).to.not.have.been.called});
-                        });
-                    });
-
-                    when("resuming", function() {
-                        sut.resume();
-
-                        then(function() {expect(destination).to.not.have.been.called; });
-
-                        when("some time has passed", function() {
-                            this.clock.tick(1);
-                            then(function() { expect(destination).to.have.been.calledWith('arg for first call'); });
-                        });
-
-                    });
-
-                    when("calling intercepted method again", function() {
-                        global.someMethod('arg for second call');
-                        then(function() { expect(destination).to.not.have.been.called; });
-
-                        when("resuming", function() {
-                            sut.resume();
-                            this.clock.tick(1);
-
-                            then(function() { expect(destination).to.have.been.calledTwice; });
-                            then(function() { expect(destination).to.have.been.calledWith('arg for first call'); });
-                            then(function() { expect(destination).to.have.been.calledWith('arg for second call'); });
-                        });
-                    });
-                });
-            });
-
-            when("aborting", function() {
-                sut.abort();
-
-                when("calling intercepted method", function() {
-                    global.someMethod();
-                    then(function() { expect(destination).to.not.have.been.called;});
-                });
-            });
-        });
-
-        when("intercepting calls to an existing method", function() {
-            global.existingMethod = function() {};
-
-            it('throws an error', function() {
-                expect(function() {
-                    sut.intercept('existingMethod');
-                }).to.throw(Basil.CannotInterceptExistingMethodError);
-            });
-        });
-
-    });
-
     describe("TestRunner", function() {
         var sut = new Basil.TestRunner();
+
+        describe("interception", function() {
+            when("runner hasn't been started", function() {
+                when("test method is called", function() {
+                    var testFn = sinon.spy();
+                    sut.test(testFn);
+
+                    then(function() { expect(testFn).to.not.have.been.called; });
+
+                    when("runner is started", function() {
+                        sut.start();
+
+                        then(function() { expect(testFn).to.not.have.been.called; });
+
+                        when("after a timeout", function() {
+                            this.clock.tick(1);
+
+                            then(function() { expect(testFn).to.have.been.called; });
+                        });
+                    });
+                });
+            });
+
+            when("runner has been started", function() {
+                sut.start();
+
+                when("test method is called", function() {
+                    var testFn = sinon.spy();
+                    sut.test(testFn);
+
+                    then(function() { expect(testFn).to.have.been.called; });
+                });
+
+                when("runner has been aborted", function() {
+                    sut.abort();
+
+                    when("test method is called", function(){
+                        var testFn = sinon.spy();
+                        sut.test(testFn);
+
+                        then(function() { expect(testFn).to.not.have.been.called; });
+                    });
+                });
+            });
+        });
+
+        sut.start();
 
         describe("test methods", function() {
             when("running empty test method", function() {
@@ -211,9 +161,9 @@
         });
 
         describe("plugins", function() {
-            when("registering a root plugin", function() {
+            when("a setup plugin is registered", function() {
                 var pluginFunction = sinon.stub();
-                sut.registerRootPlugin(pluginFunction);
+                sut.registerSetupPlugin(pluginFunction);
 
                 then(function() { expect(pluginFunction).to.not.have.been.called; });
 
@@ -233,42 +183,17 @@
 
                 pluginFunction.yields();
 
-                when("registering a second root plugin", function() {
+                when("registering a second plugin", function() {
                     var pluginFunction2 = sinon.stub().yields();
-                    sut.registerRootPlugin(pluginFunction2);
+                    sut.registerSetupPlugin(pluginFunction2);
 
                     when("running test", function() {
                         sut.test("TestName", function() {});
                         then(function() {expect(pluginFunction2).to.have.been.calledBefore(pluginFunction);});
                     });
                 });
-            });
-
-            when("root plugin callback returns", function() {
-                var callbackReturnValue;
-                var pluginFunction = function(cb) {
-                    callbackReturnValue = cb();
-                };
-                sut.registerRootPlugin(pluginFunction);
-                var result = sut.test("TestName", function() {});
-
-                then(function() { expect(callbackReturnValue).to.equal(result); });
-            });
-
-            when("register a setup plugin", function() {
-                var pluginFunction = sinon.stub();
-                sut.registerSetupPlugin(pluginFunction);
-
-                then(function() { expect(pluginFunction).to.not.have.been.called; });
-
-                when("plugin does not yield", function() {
-                    it("throws", function() {
-                        expect(function() { sut.test("TestName", function() {}); }).to.throw();
-                    });
-                });
 
                 when("running 2 nested tests", function() {
-                    pluginFunction.yields();
                     var innerTest1 = sinon.stub();
                     var innerTest2 = sinon.stub();
 
@@ -283,16 +208,35 @@
                 });
             });
 
-            when("setup plugin callback returns", function() {
-                var callbackReturnValue;
-                var pluginFunction = function(cb) {
-                    callbackReturnValue = cb();
-                };
-                sut.registerSetupPlugin(pluginFunction);
-                var result = sut.test("TestName", function() {});
+            when("a test plugin is registered", function() {
+                var pluginFunction = sinon.stub().yields();
+                sut.registerTestPlugin(pluginFunction);
 
-                then(function() { expect(callbackReturnValue).to.be.null; });
-            });
+                then(function() { expect(pluginFunction).to.not.have.been.called; });
+
+                when("running nested tests", function() {
+                    sut.test(function Outer() {
+                        sut.test(function Inner() { });
+                    });
+
+                    then(function() { expect(pluginFunction).to.have.been.calledTwice; });
+                    then(function() { expect(pluginFunction.firstCall.args[1].name()).to.equal("Outer"); });
+                    then(function() { expect(pluginFunction.lastCall.args[1].name()).to.equal("Inner"); });
+                });
+
+                when("running 2 nested tests", function() {
+                    sut.test(function Outer() {
+                        sut.test(function Inner1() { });
+                        sut.test(function Inner2() { });
+                    })
+
+                    then(function() { expect(pluginFunction.callCount).to.equal(4); });
+                    then("correct test are passed in", function() {
+                        var testNames = pluginFunction.args.map(function (args) { return args[1].name() });
+                        expect(testNames).to.contain.members(["Outer", "Inner1", "Outer", "Inner2"]);
+                    });
+                })
+            })
         });
     });
 
@@ -395,6 +339,13 @@
             then(function() { expect(runCountValueDuringFunction).to.equal(0); });
             then(function() { expect(contextDuringFunction).to.equal(passedInContext); });
         });
+
+        when("it is skipped", function() {
+            sut.skip();
+
+            then(function() { expect(sut.isComplete()).to.be.true; });
+            then(function() { expect(sut.wasSkipped()).to.be.true; });
+        })
 
         when("adding a child", function() {
             var child = sut.child("1st Child");
