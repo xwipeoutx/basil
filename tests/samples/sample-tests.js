@@ -121,9 +121,3 @@ describe("DOM fixture", function() {
         expect(temporaryElements.length).to.equal(0);
     });
 });
-
-module("QUnit Adapter");
-test("qunit style tests run", function() { });
-test("assertions are converted to their chai equivalent", function() {
-    ok(true);
-});

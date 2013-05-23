@@ -4,20 +4,19 @@
     <meta charset="UTF-8">
     <title>Sample Tests</title>
 
-    <script src="../../basil.js"></script>
-    <script src="../../basil-browser-runner.js"></script>
-    <link rel="stylesheet" href="../../basil-browser-runner.css" />
-
     <script src="../lib/chai.js"></script>
     <script src="../lib/sinon-1.5.2.js"></script>
     <script src="../lib/sinon-chai.js"></script>
 
+    <script src="../../basil.js"></script>
+    <script src="../../basil-browser-runner.js"></script>
     <script src="../../adapters/sinon-adapter.js"></script>
-    <script src="../../adapters/qunit-adapter.js"></script>
-    <script src="../../adapters/chai-qunit.js"></script>
+    <link rel="stylesheet" href="../../basil-browser-runner.css" />
 
     <script>
+        test = describe = when = then = it = basil.test;
         window.expect = chai.expect;
+        window.should = chai.should();
     </script>
 
     <script src="sample-tests.js"></script>

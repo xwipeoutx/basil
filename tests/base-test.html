@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>Your Test Title Here</title>
+
+    <script src="lib/chai.js"></script>
+    <script src="lib/sinon-1.5.2.js"></script>
+    <script src="lib/sinon-chai.js"></script>
+
+    <script src="../basil.js"></script>
+    <script src="../basil-browser-runner.js"></script>
+    <script src="../adapters/sinon-adapter.js"></script>
     <link rel="stylesheet" href="../basil-browser-runner.css" />
 
-    <script type="text/javascript" src="lib/chai.js"></script>
-    <script type="text/javascript" src="lib/sinon-1.5.2.js"></script>
-    <script type="text/javascript" src="lib/sinon-chai.js"></script>
-
-    <script type="text/javascript" src="../basil.js"></script>
-    <script type="text/javascript" src="../basil-browser-runner.js"></script>
-    <script type="text/javascript" src="../adapters/sinon-adapter.js"></script>
-
     <script>
+        test = describe = when = then = it = basil.test;
         window.expect = chai.expect;
+        window.should = chai.should();
     </script>
 
     <!-- Add your test files here -->
