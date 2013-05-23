@@ -202,7 +202,7 @@
         var li = document.createElement('li');
         li.test = test;
         li.testKey = testKey;
-        li.innerHTML = getCaption(test);
+        li.innerText = getCaption(test);
         li.setAttribute('class', getCssClass(li));
 
         addFilterLink(li, test);
