@@ -73,7 +73,7 @@
                 this._branchHasBeenRun = false;
                 this._thisValue = {};
 
-                this._runWithPlugins(this._runSingleBranch.bind(this, test, fn), this._setupPlugins, this._thisValue, [test]);
+                this.runPluginStack(this._runSingleBranch.bind(this, test, fn), this._setupPlugins, this._thisValue, [test]);
             }
         },
 
@@ -81,12 +81,12 @@
             if (test.isComplete() || this._branchHasBeenRun)
                 return;
 
-            this._runWithPlugins(this._runTestFunction.bind(this, test, fn), this._testPlugins, this._thisValue, [test]);
+            this.runPluginStack(this._runTestFunction.bind(this, test, fn), this._testPlugins, this._thisValue, [test]);
 
             this._branchHasBeenRun = true;
         },
 
-        _runWithPlugins: function(innerMostFunction, plugins, context, args) {
+        runPluginStack: function(innerMostFunction, plugins, context, args) {
             var functions = [innerMostFunction].concat(plugins);
 
             callback();
