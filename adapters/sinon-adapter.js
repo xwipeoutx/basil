@@ -6,6 +6,8 @@ sinon.config = {
     useFakeServer: false
 };
 
-Basil.TestRunner.prototype.registerSetupPlugin(function(runTest) {
-    sinon.test(runTest).call(this);
+Basil.TestRunner.prototype.registerPlugin({
+    setup: function(runTest) {
+        sinon.test(runTest).call(this);
+    }
 });
