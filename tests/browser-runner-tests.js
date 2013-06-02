@@ -551,6 +551,10 @@ describe("Browser Runner", function () {
                     expect(icon.className).to.contain('icon-filter');
                 });
 
+                then("icon has title of 'Filter'", function () {
+                    expect(icon.title).to.equal('Filter');
+                });
+
                 when("icon is clicked", function () {
                     click(icon);
 
@@ -651,6 +655,10 @@ describe("Browser Runner", function () {
                     expect(icon.className).to.contain('icon-signin');
                 });
 
+                then("icon has title of 'Inspect'", function () {
+                    expect(icon.title).to.equal('Inspect');
+                });
+
                 when("icon is clicked", function () {
                     click(icon);
 
@@ -691,6 +699,10 @@ describe("Browser Runner", function () {
 
                 then("view code icon added to test element", function () {
                     expect(icon.className).to.contain('icon-code');
+                });
+
+                then("icon has title of 'View Code'", function () {
+                    expect(icon.title).to.equal('View Code');
                 });
 
                 var code = this.dom.children[1];

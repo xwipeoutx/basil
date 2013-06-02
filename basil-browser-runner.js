@@ -397,7 +397,8 @@
 
             testRender: function (testElement, test) {
                 var filterElement = appendElement(testElement, 'i', {
-                    className: 'basil-icon basil-button icon-filter'
+                    className: 'basil-icon basil-button icon-filter',
+                    title: "Filter"
                 });
                 filterElement.addEventListener('click', function () {
                     filterInput.value = test.fullKey();
@@ -443,7 +444,8 @@
                     return;
 
                 var inspectElement = appendElement(testElement, 'i', {
-                    className: 'basil-icon basil-button icon-signin'
+                    className: 'basil-icon basil-button icon-signin',
+                    title: 'Inspect'
                 });
                 inspectElement.addEventListener('click', function () {
                     debugger;
@@ -460,7 +462,8 @@
                     return;
 
                 var codeIcon = appendElement(testElement, 'i', {
-                    className: 'basil-icon basil-button icon-code'
+                    className: 'basil-icon basil-button icon-code',
+                    title: 'View Code'
                 });
 
                 var code = appendElement(testElement, 'code', {
