@@ -142,9 +142,9 @@
             },
 
             onComplete: function () {
-                var stateClass = testRunner.testCounts.failed ? 'is-failed' : '';
                 removeClass(headerElement, 'is-running');
-                addClass(headerElement, stateClass);
+                if (testRunner.testCounts.failed)
+                    addClass(headerElement, 'is-failed');
             }
         };
     };
@@ -273,7 +273,8 @@
                 }
 
                 function applyCollapseAllState() {
-                    removeClass(results, '(is-collapsed-by-default|is-expanded-by-default)');
+                    removeClass(results, 'is-collapsed-by-default');
+                    removeClass(results, 'is-expanded-by-default');
                     addClass(results, areAllTestsCollapsed() ? 'is-collapsed-by-default' : 'is-expanded-by-default');
                 }
             },
@@ -309,8 +310,10 @@
                 : areAllTestsCollapsed();
 
             var expandCollapseIcon = testElement.querySelector('.basil-expand-collapse-icon');
-            removeClass(expandCollapseIcon, '(icon-caret-right|icon-caret-down)');
-            removeClass(testElement, '(is-collapsed|is-expanded)');
+            removeClass(expandCollapseIcon, 'icon-caret-right');
+            removeClass(expandCollapseIcon, 'icon-caret-down');
+            removeClass(testElement, 'is-collapsed');
+            removeClass(testElement, 'is-expanded');
 
             if (isCollapsed) {
                 addClass(expandCollapseIcon, 'icon-caret-right');
@@ -513,8 +516,8 @@
             testRender: function (testElement, test) {
                 addClass(testElement,
                     test.hasPassed()
-                        ? ' is-passed'
-                        : ' is-failed');
+                        ? 'is-passed'
+                        : 'is-failed');
             }
         };
     };
@@ -574,7 +577,7 @@
                     return error;
             }
         }
-    }
+    };
 
     function appendElement(el, tagName, properties) {
         return el.appendChild(createElement(tagName, properties));
@@ -601,12 +604,22 @@
     }
 
     function addClass(el, className) {
-        if (!new RegExp('\\b' + className + '\\b').test(el.className))
-            el.className += ' ' + className;
+        if ('classList' in el) {
+            el.classList.add(className);
+        } else {
+            var classList = el.className.split(' ');
+            if (!classList.some(function (c) { return c == className; }))
+                el.className += ' ' + className;
+        }
     }
 
     function removeClass(el, className) {
-        el.className = el.className.replace(new RegExp('\\b' + className + '\\b'), '');
+        if ('classList' in el)
+            el.classList.remove(className);
+        else
+            el.className = el.className
+                .split(' ')
+                .filter(function (c) { return c != className });
     }
 })(this);
 
