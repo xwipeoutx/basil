@@ -451,9 +451,12 @@
                     className: 'basil-icon basil-button icon-signin',
                     title: 'Inspect'
                 });
+
+                var inspect = test.inspect.bind(test.inspectThisValue);
+
                 inspectElement.addEventListener('click', function () {
                     debugger;
-                    test.inspect.call(test.inspectThisValue);
+                    inspect();
                 });
             }
         };
@@ -547,6 +550,9 @@
             },
 
             onComplete: function () {
+                if (notifications.checkPermission() != PERMISSION_ALLOWED)
+                    return;
+
                 var testCounts = testRunner.testCounts;
                 var icon = testCounts.failed ? failedIcon : passedIcon;
                 var message, error;
