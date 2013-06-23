@@ -102,17 +102,18 @@
     };
 
     Basil.testCountPlugin = function (testRunner) {
+        var counts = testRunner.testCounts = {
+            passed: 0,
+            failed: 0,
+            total: 0
+        };
+
         return {
-            setup: function (runTest) {
+            setup: function (runTest, test) {
                 runTest();
 
-                var counts = testRunner.testCounts = {
-                    passed: 0,
-                    failed: 0,
-                    total: 0
-                };
-
-                testRunner.tests().forEach(countLeaves);
+                if (test.isComplete())
+                    countLeaves(test);
 
                 function countLeaves(test) {
                     var children = test.children();

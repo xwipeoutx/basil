@@ -30,32 +30,29 @@ describe("Browser Runner", function () {
     describe("Test count plugin", function () {
         var sut = Basil.testCountPlugin(browserRunner);
 
-        when("test runner has no tests", function () {
-            browserRunner.tests = function () { return []; };
+        when("test is not complete", function () {
+            sut.setup.call({}, function () { }, new Basil.Test());
 
-            when("test tree is run", function () {
-                sut.setup.call({}, function () { });
-
-                then("test counts are 0", function () {
-                    expect(browserRunner.testCounts).to.deep.equal({
-                        passed: 0,
-                        failed: 0,
-                        total: 0
-                    });
+            then("test counts are 0", function () {
+                expect(browserRunner.testCounts).to.deep.equal({
+                    passed: 0,
+                    failed: 0,
+                    total: 0
                 });
             });
         });
 
         when("test runner has tree of tests", function () {
-            var a = new Basil.Test('a');
+            var a = complete(new Basil.Test('a'));
             var aa = a.child('aa');
             var aaa = aa.child('aaa');  // leaf
             var ab = a.child('ab'); // leaf
-            var b = new Basil.Test('b');  // leaf
+            var b = complete(new Basil.Test('b'));  // leaf
             browserRunner.tests = function () { return [a, b]; };
 
             when("test tree is run", function () {
-                sut.setup.call({}, function () { });
+                sut.setup.call({}, function () { }, a);
+                sut.setup.call({}, function () { }, b);
 
                 then("only leaves are counted", function () {
                     expect(browserRunner.testCounts.total).to.equal(3);
@@ -63,19 +60,18 @@ describe("Browser Runner", function () {
             });
         });
 
-        when("test runner has a mixture of passing, failing & incomplete tests", function () {
-            var pass = new Basil.Test();
-            var fail = new Basil.Test();
+        when("test runner has a mixture of passing & failing tests", function () {
+            var pass = complete(new Basil.Test());
+            var fail = complete(new Basil.Test());
             fail.hasPassed = function () { return false; };
-            pass.isComplete = fail.isComplete = function () { return true; };
-            var incomplete = new Basil.Test();
-            browserRunner.tests = function () { return [pass, pass, pass, fail, fail, incomplete]; };
 
             when("test tree is run", function () {
-                sut.setup.call({}, function () { });
+                sut.setup.call({}, function () { }, fail);
+                sut.setup.call({}, function () { }, pass);
+                sut.setup.call({}, function () { }, fail);
 
                 then("all passes counted", function () {
-                    expect(browserRunner.testCounts.passed).to.equal(3);
+                    expect(browserRunner.testCounts.passed).to.equal(1);
                 });
 
                 then("all fails counted", function () {
@@ -83,10 +79,15 @@ describe("Browser Runner", function () {
                 });
 
                 then("total includes all passed, failed & incomplete", function () {
-                    expect(browserRunner.testCounts.total).to.equal(6);
+                    expect(browserRunner.testCounts.total).to.equal(3);
                 });
             });
         });
+
+        function complete(test) {
+            test.isComplete = function () { return true; };
+            return test;
+        }
     });
 
     describe("Header state plugin", function () {
