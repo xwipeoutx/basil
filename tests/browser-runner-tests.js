@@ -48,7 +48,6 @@ describe("Browser Runner", function () {
             var aaa = aa.child('aaa');  // leaf
             var ab = a.child('ab'); // leaf
             var b = complete(new Basil.Test('b'));  // leaf
-            browserRunner.tests = function () { return [a, b]; };
 
             when("test tree is run", function () {
                 sut.setup.call({}, function () { }, a);
