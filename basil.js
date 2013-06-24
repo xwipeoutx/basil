@@ -156,8 +156,9 @@
 
         isComplete: function() {
             return this._skipped
-                || this._runCount > 0
-                    && this.children().every(function (child) { return child.isComplete(); });
+                || this._isComplete
+                || (this._isComplete = this._runCount > 0
+                    && this.children().every(function (child) { return child.isComplete(); }));
         },
 
         run: function(fn, thisValue) {
