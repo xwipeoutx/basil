@@ -60,14 +60,17 @@ describe("Browser Runner", function () {
             });
         });
 
-        when("test runner has a mixture of passing & failing tests", function () {
+        when("test runner has a mixture of passing, failing & skipped tests", function () {
             var pass = complete(new Basil.Test());
             var fail = complete(new Basil.Test());
+            var skip = new Basil.Test();
+            skip.skip();
             fail.hasPassed = function () { return false; };
 
             when("test tree is run", function () {
                 sut.setup.call({}, function () { }, fail);
                 sut.setup.call({}, function () { }, pass);
+                sut.setup.call({}, function () { }, skip);
                 sut.setup.call({}, function () { }, fail);
 
                 then("all passes counted", function () {
@@ -78,7 +81,7 @@ describe("Browser Runner", function () {
                     expect(browserRunner.testCounts.failed).to.equal(2);
                 });
 
-                then("total includes all passed, failed & incomplete", function () {
+                then("total includes all passed, failed, but not skipped", function () {
                     expect(browserRunner.testCounts.total).to.equal(3);
                 });
             });

@@ -120,8 +120,8 @@
                     if (children.length)
                         return children.forEach(countLeaves);
 
-                    counts.total++;
-                    if (test.isComplete()) {
+                    if (!test.wasSkipped()) {
+                        counts.total++;
                         if (test.hasPassed())
                             counts.passed++;
                         else
