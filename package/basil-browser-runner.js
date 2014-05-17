@@ -358,8 +358,10 @@
         return {
             testRender: function (testElement, test) {
                 var error = test.error();
-                if (error)
-                    appendText(testElement, ' (' + error + ')');
+                if (error) {
+                    var errorElement = appendElement(testElement, 'pre');
+                    appendText(errorElement, error);
+                }
             }
         };
     };

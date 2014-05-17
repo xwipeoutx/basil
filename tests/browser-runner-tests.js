@@ -484,8 +484,12 @@ describe("Browser Runner", function () {
             when("test is rendered", function () {
                 sut.testRender(this.dom, test);
 
+                then("error element added to test element", function () {
+                    this.dom.children[0].tagName.should.equal("PRE");
+                });
+
                 then("error string added to test element", function () {
-                    expect(this.dom.innerText).to.equal('testName (' + error + ')');
+                    expect(this.dom.children[0].innerText).to.equal(error.toString());
                 });
             });
         });
