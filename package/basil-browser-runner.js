@@ -646,10 +646,10 @@ basil.registerPlugin(
     Basil.displayTestCountPlugin(basil),
     Basil.passedFailedIconPlugin(),
     Basil.testNamePlugin(),
-    Basil.errorTextPlugin(),
     Basil.filterPlugin(basil, location),
     Basil.inspectPlugin(),
     Basil.viewCodePlugin(),
+    Basil.errorTextPlugin(),
     Basil.hidePassedPlugin(localStorage),
     Basil.expandCollapsePlugin(localStorage),
     Basil.notificationPlugin(basil, window.notifications || window.webkitNotifications)
