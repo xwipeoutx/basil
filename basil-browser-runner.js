@@ -149,6 +149,25 @@
         };
     };
 
+    Basil.timingsPlugin = function(getMs) {
+        var allTimings = {};
+
+        return {
+            test: function(runTest, test) {
+                var start = getMs();
+                runTest();
+                var inclusiveTime = (allTimings[test.fullKey()] || 0 ) + Math.floor(getMs() - start);
+                allTimings[test.fullKey()] = inclusiveTime;
+            },
+
+            testRender: function(testElement, test) {
+                var timingsElement = appendElement(testElement, 'span');
+                addClass(timingsElement, 'basil-test-timing');
+                appendText(timingsElement, allTimings[test.fullKey()] + 'ms');
+            }
+        }
+    }
+
     Basil.bigTitlePlugin = function (location) {
         return {
             pageRender: function (header) {
@@ -646,6 +665,7 @@ basil.registerPlugin(
     Basil.displayTestCountPlugin(basil),
     Basil.passedFailedIconPlugin(),
     Basil.testNamePlugin(),
+    Basil.timingsPlugin((function(RealDate) { return function() { return +new RealDate(); }})(Date)),
     Basil.filterPlugin(basil, location),
     Basil.inspectPlugin(),
     Basil.viewCodePlugin(),
@@ -656,6 +676,8 @@ basil.registerPlugin(
 );
 
 test = describe = when = then = it = basil.test;
+
+
 
 (function waitForBody() {
     if (document.body)

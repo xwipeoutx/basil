@@ -176,6 +176,55 @@ describe("Browser Runner", function () {
         });
     });
 
+    describe("Timings plugin", function() {
+        var sut = Basil.timingsPlugin(getMs);
+
+        var test = new Basil.Test('foo');
+        var childTest = new Basil.Test('child', test);
+        var clock = this.clock;
+
+        when('test runs', function() {
+            sut.test(tick50, test);
+
+            when("test renders", function() {
+                sut.testRender(this.dom, test);
+
+                var timingsElements = this.dom.children[0];
+                then('span child added', function() {
+                    timingsElements.tagName.should.equal('SPAN');
+                });
+
+                it('has correct css class', function() {
+                    timingsElements.className.should.equal('basil-test-timing');
+                });
+
+                it('contains elapsed ms', function() {
+                    timingsElements.innerText.should.equal('50ms');
+                });
+            });
+
+            when('test runs and renders again', function() {
+                sut.test(tick50, test);
+                sut.testRender(this.dom, test);
+
+                var timingsElements = this.dom.children[0];
+
+                it('timings are added together', function() {
+                    timingsElements.innerText.should.equal('100ms');
+                });
+            });
+        });
+
+        function getMs() {
+            // this will be overidden by sinon
+            return +new Date();
+        }
+
+        function tick50() {
+            clock.tick(50);
+        }
+    });
+
     describe("Display test count plugin", function () {
         document.title = 'foo';
         var sut = Basil.displayTestCountPlugin(browserRunner);

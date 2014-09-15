@@ -201,6 +201,13 @@ button.basil-icon {
     display: none;
 }
 
+/* Timings */
+.basil-test-timing {
+    margin-left: 0.3em;
+    margin-right: 0.3em;
+    color: hsl(0, 0%, 80%);
+}
+
 /* Font Awesome by Dave Gandy - http://fontawesome.io */
 @font-face {
     font-family: 'FontAwesome';
