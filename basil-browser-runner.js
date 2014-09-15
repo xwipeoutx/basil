@@ -1,27 +1,27 @@
-﻿(function (global) {
+﻿(function(global) {
     "use strict";
 
-    function extend(constructor, subPrototype) {
+    function extend (constructor, subPrototype) {
         var prototype = Object.create(constructor.prototype);
-        Object.keys(subPrototype).forEach(function (key) {
+        Object.keys(subPrototype).forEach(function(key) {
             prototype[key] = subPrototype[key];
         });
 
         return prototype;
     }
 
-    function BrowserRunner() {
+    function BrowserRunner () {
         Basil.TestRunner.call(this);
         this.registerPlugin({ setup: this._onRootTestRun.bind(this) });
     }
 
     BrowserRunner.prototype = extend(Basil.TestRunner, {
-        start: function () {
+        start: function() {
             this._renderPage();
             Basil.TestRunner.prototype.start.call(this);
         },
 
-        _renderPage: function () {
+        _renderPage: function() {
             var header = appendElement(document.body, 'div', {
                 id: 'basil-header'
             });
@@ -33,7 +33,7 @@
             this.runPluginQueue('pageRender', this, [header, results]);
         },
 
-        _onRootTestRun: function (runTest, test) {
+        _onRootTestRun: function(runTest, test) {
             runTest();
 
             clearTimeout(this._completedTimeout);
@@ -43,15 +43,15 @@
                 this._appendResults(this._resultsElement, [test]);
         },
 
-        _appendResults: function (el, tests) {
-            tests = tests.filter(function (t) { return !t.wasSkipped(); });
+        _appendResults: function(el, tests) {
+            tests = tests.filter(function(t) { return !t.wasSkipped(); });
 
             if (!tests.length)
                 return;
 
             var ul = document.createElement('ul');
             ul.className = 'basil-test-group';
-            tests.forEach(function (test, i) {
+            tests.forEach(function(test, i) {
                 var li = this._createTestElement(test);
                 this._appendResults(li, test.children());
                 ul.appendChild(li);
@@ -60,7 +60,7 @@
             el.appendChild(ul);
         },
 
-        _createTestElement: function (test) {
+        _createTestElement: function(test) {
             var li = document.createElement('li');
             li.className = 'basil-test';
 
@@ -69,20 +69,20 @@
             return li;
         },
 
-        _complete: function () {
+        _complete: function() {
             this.runPluginQueue('onComplete');
         }
     });
 
     Basil.BrowserRunner = BrowserRunner;
 
-    Basil.domFixturePlugin = function () {
+    Basil.domFixturePlugin = function() {
         return {
-            setup: function (runTest) {
+            setup: function(runTest) {
                 var domElement = null;
 
                 Object.defineProperty(this, 'dom', {
-                    get: function () {
+                    get: function() {
                         if (domElement != null)
                             return domElement;
 
@@ -101,7 +101,7 @@
         };
     };
 
-    Basil.testCountPlugin = function (testRunner) {
+    Basil.testCountPlugin = function(testRunner) {
         var counts = testRunner.testCounts = {
             passed: 0,
             failed: 0,
@@ -109,13 +109,13 @@
         };
 
         return {
-            setup: function (runTest, test) {
+            setup: function(runTest, test) {
                 runTest();
 
                 if (test.isComplete())
                     countLeaves(test);
 
-                function countLeaves(test) {
+                function countLeaves (test) {
                     var children = test.children();
                     if (children.length)
                         return children.forEach(countLeaves);
@@ -132,21 +132,83 @@
         };
     };
 
-    Basil.headerStatePlugin = function (testRunner) {
+    Basil.headerStatePlugin = function(testRunner) {
         var headerElement;
 
         return {
-            pageRender: function (header) {
+            pageRender: function(header) {
                 headerElement = header;
                 addClass(header, 'is-running');
             },
 
-            onComplete: function () {
+            onComplete: function() {
                 removeClass(headerElement, 'is-running');
                 if (testRunner.testCounts.failed)
                     addClass(headerElement, 'is-failed');
             }
         };
+    };
+
+    Basil.fullTimingsPlugin = function(storage, location, getMs) {
+        var filter = currentFilter(location);
+        var timingElement, timingFluid, timingValue, start;
+        var previous = parseInt(storage['basil-previous-timing-' + filter]);
+
+        return {
+            pageRender: function(header) {
+                timingElement = appendElement(header, 'span');
+                addClass(timingElement, 'basil-full-timing');
+                timingElement.style.width = '100px';
+                timingElement.title = "Previous: " + timeString(previous);
+
+                timingFluid = appendElement(timingElement, 'span');
+                addClass(timingFluid, 'basil-full-timing-fluid');
+
+                timingValue = appendElement(timingElement, 'span');
+                addClass(timingValue, 'basil-full-timing-value');
+
+                start = getMs();
+            },
+
+            setup: function(runTest, test) {
+                runTest();
+                update();
+            },
+
+            onComplete: function() {
+                var elapsed = getMs() - start;
+                storage['basil-previous-timing-' + filter] = elapsed;
+                update();
+            }
+        };
+
+        function update() {
+            var elapsed = getMs() - start;
+            storage['basil-previous-timing-' + filter] = elapsed;
+            addClass(timingElement, 'elapsed-time');
+
+            timingFluid.style.width = fluidWidth(previous, elapsed);
+
+            if (elapsed > previous)
+                addClass(timingFluid, 'is-basil-full-timing-slower')
+
+            timingValue.innerText = timeString(elapsed);
+        }
+
+        function fluidWidth(previous, current) {
+            return (Math.floor(current*100 / previous)) + 'px';
+        }
+
+        function timeString(ms) {
+            if (!ms)
+                return 'Unknown';
+
+            if (ms < 5000)
+                return Math.floor(ms) + 'ms';
+            else
+                return Math.floor(ms/1000) + 's';
+        }
+
     };
 
     Basil.timingsPlugin = function(getMs) {
@@ -156,7 +218,8 @@
             test: function(runTest, test) {
                 var start = getMs();
                 runTest();
-                var inclusiveTime = (allTimings[test.fullKey()] || 0 ) + Math.floor(getMs() - start);
+                var timeSoFar = allTimings[test.fullKey()] || 0;
+                var inclusiveTime = timeSoFar + Math.floor(getMs() - start);
                 allTimings[test.fullKey()] = inclusiveTime;
             },
 
@@ -168,9 +231,9 @@
         }
     }
 
-    Basil.bigTitlePlugin = function (location) {
+    Basil.bigTitlePlugin = function(location) {
         return {
-            pageRender: function (header) {
+            pageRender: function(header) {
                 appendElement(header, 'a', {
                     id: 'basil-title',
                     href: location.href.replace(location.search, ''),
@@ -180,7 +243,7 @@
         };
     };
 
-    Basil.favIconPlugin = function () {
+    Basil.favIconPlugin = function() {
         var failedIcon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAHdSURBVDjLpZNraxpBFIb3a0ggISmmNISWXmOboKihxpgUNGWNSpvaS6RpKL3Ry//Mh1wgf6PElaCyzq67O09nVjdVlJbSDy8Lw77PmfecMwZg/I/GDw3DCo8HCkZl/RlgGA0e3Yfv7+DbAfLrW+SXOvLTG+SHV/gPbuMZRnsyIDL/OASziMxkkKkUQTJJsLaGn8/iHz6nd+8mQv87Ahg2H9Th/BxZqxEkEgSrq/iVCvLsDK9awtvfxb2zjD2ARID+lVVlbabTgWYTv1rFL5fBUtHbbeTJCb3EQ3ovCnRC6xAgzJtOE+ztheYIEkqbFaS3vY2zuIj77AmtYYDusPy8/zuvunJkDKXM7tYWTiyGWFjAqeQnAD6+7ueNx/FLpRGAru7mcoj5ebqzszil7DggeF/DX1nBN82rzPqrzbRayIsLhJqMPT2N83Sdy2GApwFqRN7jFPL0tF+10cDd3MTZ2AjNUkGCoyO6y9cRxfQowFUbpufr1ct4ZoHg+Dg067zduTmEbq4yi/UkYidDe+kaTcP4ObJIajksPd/eyx3c+N2rvPbMDPbUFPZSLKzcGjKPrbJaDsu+dQO3msfZzeGY2TCvKGYQhdSYeeJjUt21dIcjXQ7U7Kv599f4j/oF55W4g/2e3b8AAAAASUVORK5CYII=';
         var passedIcon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKfSURBVDjLpZPrS1NhHMf9O3bOdmwDCWREIYKEUHsVJBI7mg3FvCxL09290jZj2EyLMnJexkgpLbPUanNOberU5taUMnHZUULMvelCtWF0sW/n7MVMEiN64AsPD8/n83uucQDi/id/DBT4Dolypw/qsz0pTMbj/WHpiDgsdSUyUmeiPt2+V7SrIM+bSss8ySGdR4abQQv6lrui6VxsRonrGCS9VEjSQ9E7CtiqdOZ4UuTqnBHO1X7YXl6Daa4yGq7vWO1D40wVDtj4kWQbn94myPGkCDPdSesczE2sCZShwl8CzcwZ6NiUs6n2nYX99T1cnKqA2EKui6+TwphA5k4yqMayopU5mANV3lNQTBdCMVUA9VQh3GuDMHiVcLCS3J4jSLhCGmKCjBEx0xlshjXYhApfMZRP5CyYD+UkG08+xt+4wLVQZA1tzxthm2tEfD3JxARH7QkbD1ZuozaggdZbxK5kAIsf5qGaKMTY2lAU/rH5HW3PLsEwUYy+YCcERmIjJpDcpzb6l7th9KtQ69fi09ePUej9l7cx2DJbD7UrG3r3afQHOyCo+V3QQzE35pvQvnAZukk5zL5qRL59jsKbPzdheXoBZc4saFhBS6AO7V4zqCpiawuptwQG+UAa7Ct3UT0hh9p9EnXT5Vh6t4C22QaUDh6HwnECOmcO7K+6kW49DKqS2DrEZCtfuI+9GrNHg4fMHVSO5kE7nAPVkAxKBxcOzsajpS4Yh4ohUPPWKTUh3PaQEptIOr6BiJjcZXCwktaAGfrRIpwblqOV3YKdhfXOIvBLeREWpnd8ynsaSJoyESFphwTtfjN6X1jRO2+FxWtCWksqBApeiFIR9K6fiTpPiigDoadqCEag5YUFKl6Yrciw0VOlhOivv/Ff8wtn0KzlebrUYwAAAABJRU5ErkJggg==';
         var runningPassedIcon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAIMSURBVBgZpcHNi05xGMfhz/07hzTDiKZmEmLYeM3iKTKUiFhY2EhZ2NjIBgsWYoUoSWr+B7NhY6GkJBRhYSMvJYRSFDPPi3N+9/01Z2Jvcl0mif9h+46PH92yrXXpe0f9EhCBIvBwFCIUyJ2QkDsewcDsuv3y5adTN67sHytbo61rs+b0p6E5zER/u+PXgLGyUyt1vk8yU91aiSmlXJw/uJKZOnzxPY1SChpVdgQohAcEIkJ4BJ6FZ+EKKhfLh+fh4TRKJBqWDJNQMmTCwkjJMEuYOVaIIhJlFo3ITiN5OI0EmBmWjCIZqTAsQZFgVlFw/tZuTt/cjIqaRnjQSAoxzYxGApIZKRlFYRQGKcGvXLF4cBXHxjdS5R4RTqOMcP4yM6ZJnLy+DSlTRabKmUULVrJqeCMTvTZ7x0ZYoKs0ylzXTDPDAEmYGTkqdq45hCvwcALx+cdH1i0eZbLq8qx7iPXnDswv5UGjAMQUM5Do5QpX8P7bG+rI5Kipvebnrwk2LNnKZN3h8bsH38qI4C8DjClm9HKP7JmhgaXkcFzBlx8fWDh3mOcfH/L47Qs6Tsv2HR8fH1qyaH+4Ex64OxHBz8Ej9KqKKip6uWLF4Go2jezi6YdH3H/1hGXdE7fvXD6zxyTxL9aeS+3W0u19917f/VQFOz5f0CummCT+xchZa3sUfd3wka8X9I4/fgON+TR7PCxMcAAAAABJRU5ErkJggg==';
@@ -190,11 +253,11 @@
         var lastRenderTime = 0;
 
         return {
-            pageRender: function () {
+            pageRender: function() {
                 setFavIconElement(runningPassedIcon);
             },
 
-            setup: function (runTest, test) {
+            setup: function(runTest, test) {
                 runTest();
 
                 if (!hasFailed && test.isComplete() && !test.hasPassed()) {
@@ -203,7 +266,7 @@
                 }
             },
 
-            onComplete: function () {
+            onComplete: function() {
                 if (hasFailed)
                     setFavIconElement(failedIcon);
                 else
@@ -211,7 +274,7 @@
             }
         };
 
-        function setFavIconElement(url) {
+        function setFavIconElement (url) {
             var favIcon = document.getElementById('favIcon');
             if (!favIcon) {
                 favIcon = appendElement(document.head, 'link', {
@@ -225,7 +288,7 @@
             forceRender();
         }
 
-        function forceRender() {
+        function forceRender () {
             if (Date.now() - lastRenderTime >= 250) {
                 document.body.clientWidth;
                 lastRenderTime = Date.now();
@@ -233,12 +296,12 @@
         }
     };
 
-    Basil.displayTestCountPlugin = function (browserRunner) {
+    Basil.displayTestCountPlugin = function(browserRunner) {
         var originalTitle = document.title;
         var passed, failed, total;
 
         return {
-            pageRender: function (header) {
+            pageRender: function(header) {
                 var container = appendElement(header, 'div', { id: 'basil-summary' });
                 passed = appendElement(container, 'span', { className: 'basil-passes' });
                 appendText(container, '/');
@@ -247,7 +310,7 @@
                 total = appendElement(container, 'span', { className: 'basil-total' });
             },
 
-            setup: function (runTest) {
+            setup: function(runTest) {
                 runTest();
 
                 passed.innerText = browserRunner.testCounts.passed;
@@ -259,46 +322,46 @@
         };
     };
 
-    Basil.expandCollapsePlugin = function (localStorage) {
+    Basil.expandCollapsePlugin = function(localStorage) {
         localStorage = localStorage || {};
         var collapseKeyPrefix = 'basil-collapsed-';
         var updateAllTests = [];
 
         return {
-            pageRender: function (header, results) {
+            pageRender: function(header, results) {
                 var container = appendElement(header, 'span', { className: 'basil-expand-collapse-all' });
 
                 var expandAll = appendElement(container, 'label', { className: 'basil-expand-all basil-header-section basil-header-button' });
                 appendElement(expandAll, 'button', { className: 'basil-icon icon-plus-sign-alt' });
                 appendText(expandAll, 'Expand all');
-                expandAll.addEventListener('click', function () { setCollapseAllState(false); });
+                expandAll.addEventListener('click', function() { setCollapseAllState(false); });
 
                 var collapseAll = appendElement(container, 'label', { className: 'basil-collapse-all basil-header-section basil-header-button' });
                 appendElement(collapseAll, 'button', { className: 'basil-icon icon-minus-sign-alt' });
                 appendText(collapseAll, 'Collapse all');
-                collapseAll.addEventListener('click', function () { setCollapseAllState(true); });
+                collapseAll.addEventListener('click', function() { setCollapseAllState(true); });
 
                 applyCollapseAllState();
 
-                function setCollapseAllState(collapseAll) {
+                function setCollapseAllState (collapseAll) {
                     localStorage.collapseAllTests = collapseAll + '';
                     applyCollapseAllState();
 
-                    Object.keys(localStorage).forEach(function (key) {
+                    Object.keys(localStorage).forEach(function(key) {
                         if (key.indexOf(collapseKeyPrefix) == 0)
                             delete localStorage[key];
                     });
-                    updateAllTests.forEach(function (update) { update(); });
+                    updateAllTests.forEach(function(update) { update(); });
                 }
 
-                function applyCollapseAllState() {
+                function applyCollapseAllState () {
                     removeClass(results, 'is-collapsed-by-default');
                     removeClass(results, 'is-expanded-by-default');
                     addClass(results, areAllTestsCollapsed() ? 'is-collapsed-by-default' : 'is-expanded-by-default');
                 }
             },
 
-            testRender: function (testElement, test) {
+            testRender: function(testElement, test) {
                 var expandCollapseIcon = prependElement(testElement, 'i', {
                     className: 'basil-icon basil-button basil-expand-collapse-icon'
                 });
@@ -312,7 +375,7 @@
                 expandCollapseIcon.addEventListener('click', toggleCollapsed);
                 updateAllTests.push(applyCollapsedState.bind(this, testElement, test));
 
-                function toggleCollapsed() {
+                function toggleCollapsed () {
                     if (key in localStorage)
                         delete localStorage[key];
                     else
@@ -322,7 +385,7 @@
             }
         };
 
-        function applyCollapsedState(testElement, test) {
+        function applyCollapsedState (testElement, test) {
             var key = collapseKey(test);
             var isCollapsed = key in localStorage
                 ? localStorage[key] == 'true'
@@ -345,18 +408,18 @@
             }
         }
 
-        function collapseKey(test) {
+        function collapseKey (test) {
             return collapseKeyPrefix + test.fullKey();
         }
 
-        function areAllTestsCollapsed() {
+        function areAllTestsCollapsed () {
             return localStorage.collapseAllTests == 'true';
         }
     };
 
-    Basil.passedFailedIconPlugin = function () {
+    Basil.passedFailedIconPlugin = function() {
         return {
-            testRender: function (testElement, test) {
+            testRender: function(testElement, test) {
                 appendElement(testElement, 'i', {
                     className: 'basil-icon '
                         + (test.hasPassed() ? 'icon-ok' : 'icon-remove')
@@ -365,17 +428,17 @@
         };
     };
 
-    Basil.testNamePlugin = function () {
+    Basil.testNamePlugin = function() {
         return {
-            testRender: function (testElement, test) {
+            testRender: function(testElement, test) {
                 appendText(testElement, test.name());
             }
         };
     };
 
-    Basil.errorTextPlugin = function () {
+    Basil.errorTextPlugin = function() {
         return {
-            testRender: function (testElement, test) {
+            testRender: function(testElement, test) {
                 var error = test.error();
                 if (error) {
                     var errorElement = appendElement(testElement, 'pre');
@@ -385,18 +448,14 @@
         };
     };
 
-    Basil.filterPlugin = function (browserRunner, location) {
-        var filter = (param('filter') || '');
-        var filterParts = filter
-            .toLowerCase()
-            .split('>')
-            .filter(Boolean)
-            .map(function (filterPart) { return filterPart.trim(); });
+    Basil.filterPlugin = function(browserRunner, location) {
         var testDepth = 0;
         var filterForm, filterInput;
+        var filter = currentFilter(location);
+        var filterParts = parseFilterText(filter);
 
         return {
-            pageRender: function (header) {
+            pageRender: function(header) {
                 filterForm = appendElement(header, 'form', {
                     className: 'basil-filter basil-header-section',
                     action: location.href
@@ -411,27 +470,27 @@
                 });
                 filterInput.focus();
 
-                filterForm.addEventListener('submit', function () {
+                filterForm.addEventListener('submit', function() {
                     browserRunner.abort();
                 });
 
-                filterForm.addEventListener('search', function () {
+                filterForm.addEventListener('search', function() {
                     filterForm.submit();
                 });
             },
 
-            testRender: function (testElement, test) {
+            testRender: function(testElement, test) {
                 var filterElement = appendElement(testElement, 'i', {
                     className: 'basil-icon basil-button icon-filter',
                     title: "Filter"
                 });
-                filterElement.addEventListener('click', function () {
+                filterElement.addEventListener('click', function() {
                     filterInput.value = test.fullKey();
                     filterForm.submit();
                 });
             },
 
-            test: function (runTest, test) {
+            test: function(runTest, test) {
                 var testKey = test.key();
 
                 var isPartialMatch = testKey.indexOf(filterParts[testDepth] || '') > -1;
@@ -449,22 +508,11 @@
             }
         };
 
-        function param(key) {
-            var query = location.search.substring(1);
-            var vars = query.split('&');
-            for (var i = 0; i < vars.length; i++) {
-                var pair = vars[i].split('=');
-                if (decodeURIComponent(pair[0]) == key) {
-                    var value = pair[1].replace(/\+/g, ' ');
-                    return decodeURIComponent(value);
-                }
-            }
-        }
     };
 
-    Basil.inspectPlugin = function () {
+    Basil.inspectPlugin = function() {
         return {
-            testRender: function (testElement, test) {
+            testRender: function(testElement, test) {
                 if (!test.inspect)
                     return;
 
@@ -475,7 +523,7 @@
 
                 var inspect = test.inspect.bind(test.inspectThisValue);
 
-                inspectElement.addEventListener('click', function () {
+                inspectElement.addEventListener('click', function() {
                     debugger;
                     inspect();
                 });
@@ -483,9 +531,9 @@
         };
     };
 
-    Basil.viewCodePlugin = function () {
+    Basil.viewCodePlugin = function() {
         return {
-            testRender: function (testElement, test) {
+            testRender: function(testElement, test) {
                 if (!test.inspect)
                     return;
 
@@ -500,7 +548,7 @@
                 });
 
                 var isVisible = false;
-                codeIcon.addEventListener('click', function () {
+                codeIcon.addEventListener('click', function() {
                     isVisible = !isVisible;
                     code.className = isVisible
                         ? 'basil-code is-basil-code-visible'
@@ -510,11 +558,11 @@
         };
     };
 
-    Basil.hidePassedPlugin = function (localStorage) {
+    Basil.hidePassedPlugin = function(localStorage) {
         localStorage = localStorage || {};
 
         return {
-            pageRender: function (header, results) {
+            pageRender: function(header, results) {
                 var label = appendElement(header, 'label', { className: 'basil-hide-passed basil-header-section' });
 
                 var checkbox = appendElement(label, 'input', {
@@ -528,7 +576,7 @@
 
                 checkbox.addEventListener('change', updateHidePassedState);
 
-                function updateHidePassedState() {
+                function updateHidePassedState () {
                     localStorage.isHidePassedChecked = checkbox.checked + '';
                     if (checkbox.checked)
                         addClass(results, 'is-hiding-passed');
@@ -537,7 +585,7 @@
                 }
             },
 
-            testRender: function (testElement, test) {
+            testRender: function(testElement, test) {
                 addClass(testElement,
                     test.hasPassed()
                         ? 'is-passed'
@@ -546,10 +594,10 @@
         };
     };
 
-    Basil.notificationPlugin = function (testRunner, notifications) {
+    Basil.notificationPlugin = function(testRunner, notifications) {
         if (!notifications)
             return {
-                pageRender: function(){}
+                pageRender: function() {}
             };
 
         // Icons by Visual Pharm - http://www.visualpharm.com
@@ -562,7 +610,7 @@
             _failedIcon: failedIcon,    // for testing
             _passedIcon: passedIcon,
 
-            pageRender: function (header, results) {
+            pageRender: function(header, results) {
                 if (notifications.checkPermission() == PERMISSION_ALLOWED)
                     return;
 
@@ -570,12 +618,12 @@
                 appendElement(label, 'button', { className: 'basil-icon icon-comment' });
                 appendText(label, 'Enable notifications');
 
-                label.addEventListener('click', function () {
+                label.addEventListener('click', function() {
                     notifications.requestPermission();
                 }, false);
             },
 
-            onComplete: function () {
+            onComplete: function() {
                 if (notifications.checkPermission() != PERMISSION_ALLOWED)
                     return;
 
@@ -591,17 +639,17 @@
                 var notification = notifications.createNotification(icon, title, message);
                 notification.show();
 
-                window.addEventListener('beforeunload', function () {
+                window.addEventListener('beforeunload', function() {
                     notification.cancel();
                 });
 
-                setTimeout(function () {
+                setTimeout(function() {
                     notification.cancel();
                 }, error ? error.length * 200 / 6 + 1000 : 1000);
             }
         };
 
-        function findError(tests) {
+        function findError (tests) {
             for (var i = 0; i < tests.length; i++) {
                 var error = tests[i].error()
                     || findError(tests[i].children());
@@ -611,75 +659,104 @@
         }
     };
 
-    function appendElement(el, tagName, properties) {
+    function currentFilter (location) {
+        return (param('filter') || '');
+
+        function param (key) {
+            var query = location.search.substring(1);
+            var vars = query.split('&');
+            for (var i = 0; i < vars.length; i++) {
+                var pair = vars[i].split('=');
+                if (decodeURIComponent(pair[0]) == key) {
+                    var value = pair[1].replace(/\+/g, ' ');
+                    return decodeURIComponent(value);
+                }
+            }
+        }
+    }
+
+    function parseFilterText (filter) {
+        return filter
+            .toLowerCase()
+            .split('>')
+            .filter(Boolean)
+            .map(function(filterPart) { return filterPart.trim(); });
+
+    }
+
+    function appendElement (el, tagName, properties) {
         return el.appendChild(createElement(tagName, properties));
     }
 
-    function prependElement(el, tagName, properties) {
+    function prependElement (el, tagName, properties) {
         if (!el.childNodes.length)
             return appendElement(el, tagName, properties);
 
         return el.insertBefore(createElement(tagName, properties), el.childNodes[0]);
     }
 
-    function createElement(tagName, properties) {
+    function createElement (tagName, properties) {
         var newElement = document.createElement(tagName);
         if (properties)
-            Object.keys(properties).forEach(function (key) {
+            Object.keys(properties).forEach(function(key) {
                 newElement[key] = properties[key];
             });
         return newElement;
     }
 
-    function appendText(el, text) {
+    function appendText (el, text) {
         el.appendChild(document.createTextNode(text));
     }
 
-    function addClass(el, className) {
+    function addClass (el, className) {
         if ('classList' in el) {
             el.classList.add(className);
         } else {
             var classList = el.className.split(' ');
-            if (!classList.some(function (c) { return c == className; }))
+            if (!classList.some(function(c) { return c == className; }))
                 el.className += ' ' + className;
         }
     }
 
-    function removeClass(el, className) {
+    function removeClass (el, className) {
         if ('classList' in el)
             el.classList.remove(className);
         else
             el.className = el.className
                 .split(' ')
-                .filter(function (c) { return c != className });
+                .filter(function(c) { return c != className });
     }
 })(this);
 
 basil = new Basil.BrowserRunner();
-basil.registerPlugin(
-    Basil.domFixturePlugin(),
-    Basil.testCountPlugin(basil),
-    Basil.headerStatePlugin(basil),
-    Basil.bigTitlePlugin(location),
-    Basil.favIconPlugin(),
-    Basil.displayTestCountPlugin(basil),
-    Basil.passedFailedIconPlugin(),
-    Basil.testNamePlugin(),
-    Basil.timingsPlugin((function(RealDate) { return function() { return +new RealDate(); }})(Date)),
-    Basil.filterPlugin(basil, location),
-    Basil.inspectPlugin(),
-    Basil.viewCodePlugin(),
-    Basil.errorTextPlugin(),
-    Basil.hidePassedPlugin(localStorage),
-    Basil.expandCollapsePlugin(localStorage),
-    Basil.notificationPlugin(basil, window.notifications || window.webkitNotifications)
-);
 
+(function() {
+    var RealDate = Date;
+
+    basil.registerPlugin(
+        Basil.domFixturePlugin(),
+        Basil.testCountPlugin(basil),
+        Basil.headerStatePlugin(basil),
+        Basil.bigTitlePlugin(location),
+        Basil.favIconPlugin(),
+        Basil.displayTestCountPlugin(basil),
+        Basil.passedFailedIconPlugin(),
+        Basil.testNamePlugin(),
+        Basil.timingsPlugin(function() { return +new RealDate(); }),
+        Basil.filterPlugin(basil, location),
+        Basil.inspectPlugin(),
+        Basil.viewCodePlugin(),
+        Basil.errorTextPlugin(),
+        Basil.fullTimingsPlugin(localStorage, location, function() { return +new RealDate(); }),
+        Basil.hidePassedPlugin(localStorage),
+        Basil.expandCollapsePlugin(localStorage),
+        Basil.notificationPlugin(basil, window.notifications || window.webkitNotifications)
+    );
+})();
 test = describe = when = then = it = basil.test;
 
 
-
-(function waitForBody() {
+(function waitForBody () {
     if (document.body)
         basil.start();
     else

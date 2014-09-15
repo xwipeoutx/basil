@@ -177,7 +177,104 @@ describe("Browser Runner", function() {
     });
 
     describe("Full timings plugin", function() {
+        var storage = {};
+        var location = {  search: '?filter=foo' };
+        var clock = this.clock;
 
+        when('no previous timing', function() {
+            var sut = Basil.fullTimingsPlugin(storage, location, getMs);
+            sut.pageRender(this.dom);
+            var timingElement = this.dom.children[0];
+            var fluidElement = timingElement.children[0];
+            var valueElement = timingElement.children[1];
+
+            then("timing tooltip is unknown", function() {
+                timingElement.title.should.equal("Previous: Unknown");
+            });
+
+            when("time passes and setup is called", function() {
+                sut.setup(tick50, {});
+
+                then("value element has elapsed time", function() {
+                    valueElement.innerText.should.equal("50ms");
+                });
+
+                then("fluid width is 0", function() {
+                    fluidElement.style.width.should.be.empty;
+                });
+            });
+
+            when("over 5s passes", function() {
+                this.clock.tick(5001);
+                sut.setup(function(){}, {});
+
+                then("elapsed time is formatted in seconds", function() {
+                    valueElement.innerText.should.equal("5s");
+                });
+            })
+        });
+
+        when('previous timing exists', function() {
+            storage['basil-previous-timing-SomeFilter'] = 100;
+            location.search = '?filter=SomeFilter';
+            var sut = Basil.fullTimingsPlugin(storage, location, getMs);
+
+            sut.pageRender(this.dom);
+            var timingElement = this.dom.children[0];
+            var fluidElement = timingElement.children[0];
+
+            then("timing tooltip is unknown", function() {
+                timingElement.title.should.equal("Previous: 100ms");
+            });
+
+            when("time passes and setup is called", function() {
+                clock.tick(25);
+                sut.setup(function(){}, {});
+
+                then("fluid width is proportion of previous", function() {
+                    fluidElement.style.width.should.equal('25px');
+                });
+
+                when("setup takes some time", function() {
+                    sut.setup(tick50, {});
+
+                    then("time added to fluid", function() {
+                        fluidElement.style.width.should.equal('75px');
+                    });
+                });
+
+                when("goes overtime", function() {
+                    clock.tick(125);
+                    sut.setup(function(){}, {});
+
+                    then("time added to fluid", function() {
+                        fluidElement.style.width.should.equal('150px');
+                    });
+
+                    then("slower class added", function() {
+                        fluidElement.className.should.contain('is-basil-full-timing-slower');
+                    });
+                });
+
+                when("test finishes", function() {
+                    sut.onComplete();
+
+                    then("storage updated", function() {
+                        storage['basil-previous-timing-SomeFilter'].should.equal(25);
+                    });
+                });
+            });
+        });
+
+
+        function getMs () {
+            // this will be overidden by sinon
+            return +new Date();
+        }
+
+        function tick50 () {
+            clock.tick(50);
+        }
     });
 
     describe("Timings plugin", function() {
