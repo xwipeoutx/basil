@@ -193,12 +193,50 @@ button.basil-icon {
 }
 
 /* Hide Passed */
-.basil-hide-passed {
-    margin-left: -0.5em;
-}
-
 .is-hiding-passed .is-passed {
     display: none;
+}
+
+/* Timings */
+.basil-full-timing {
+    cursor: default;
+    overflow: hidden;
+    white-space: nowrap;
+    display: inline-block;
+    position: relative;
+    background: white;
+    border: 1px solid black;
+    color: black;
+    text-align: right;
+    height: 1.2em;
+}
+
+.basil-full-timing-fluid {
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 1.2em;
+    background: hsl(225, 100%, 80%);
+}
+
+.is-basil-full-timing-slower {
+    background: hsl(0, 100%, 80%);
+}
+
+.basil-full-timing-value {
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 1.2em;
+
+}
+
+.basil-test-timing {
+    margin-left: 0.3em;
+    margin-right: 0.3em;
+    color: hsl(0, 0%, 80%);
 }
 
 /* Font Awesome by Dave Gandy - http://fontawesome.io */
