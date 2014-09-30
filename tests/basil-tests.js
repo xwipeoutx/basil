@@ -19,6 +19,17 @@
                             this.clock.tick(1);
 
                             then(function () { expect(testFn).to.have.been.called; });
+							
+							when("start again", function() {
+								testFn.reset();
+								sut.start();
+								
+								when("after a timeout", function () {
+									this.clock.tick(1);
+
+									then(function () { expect(testFn).to.have.not.been.called; });
+								});
+							});
                         });
                     });
                 });
@@ -47,10 +58,10 @@
             });
         });
 
-        sut.start();
-
         describe("test methods", function () {
-            when("running empty test method", function () {
+			sut.start();
+
+			when("running empty test method", function () {
                 var testFunction = sinon.stub();
                 var result = sut.test("TestName", testFunction);
 
@@ -168,6 +179,8 @@
         });
 
         describe("plugins", function () {
+			sut.start();
+
             when("a plugin is registered", function () {
                 var innerMostFunction = sinon.spy();
                 var thisValue = {};
