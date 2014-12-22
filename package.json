@@ -1,0 +1,20 @@
+{
+  "name": "basil",
+  "version": "1.0.0",
+  "description": "Javascript test runner with fluent hierarchical test setup",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xwipeoutx/basil"
+  },
+  "keywords": [
+    "test",
+    "runner",
+    "bdd"
+  ],
+  "author": "Steve Leigh",
+  "license": "BSD 2-Clause",
+  "bugs": {
+    "url": "https://github.com/xwipeoutx/basil/issues"
+  },
+  "homepage": "https://github.com/xwipeoutx/basil"
+}
