@@ -1,7 +1,7 @@
 /// <reference path="TestRunner.ts" />
 /// <reference path="dom-utils.ts" />
 
-interface BrowserPlugin {
+interface BrowserPlugin extends TestPlugin {
     pageRender(browserRunner : BrowserRunner, header : HTMLElement, results : HTMLElement) : void
     testRender(testElement : HTMLElement, test : Test) : void
     onComplete() : void
@@ -11,6 +11,12 @@ class BrowserRunner extends TestRunner {
     private _resultsElement : HTMLElement;
     private _browserPlugins : BrowserPlugin[] = [];
     private _completedTimeout : number = null;
+
+    public counts = {
+        passed: 0,
+        failed: 0,
+        total: 0
+    };
 
     start() : void {
         this.renderPage();

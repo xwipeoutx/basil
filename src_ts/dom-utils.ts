@@ -1,10 +1,10 @@
-function appendElement (el : HTMLElement, tagName : string, properties : any) : HTMLElement {
+function appendElement (el : HTMLElement, tagName : string, properties? : any) : HTMLElement {
     var newElement = createElement(tagName, properties);
     el.appendChild(newElement);
     return newElement;
 }
 
-function prependElement (el : HTMLElement, tagName : string, properties : any) : HTMLElement {
+function prependElement (el : HTMLElement, tagName : string, properties? : any) : HTMLElement {
     if (!el.childNodes.length)
         return appendElement(el, tagName, properties);
 
@@ -13,7 +13,7 @@ function prependElement (el : HTMLElement, tagName : string, properties : any) :
     return newElement;
 }
 
-function createElement (tagName : string, properties : any) {
+function createElement (tagName : string, properties? : any) {
     var newElement = document.createElement(tagName);
     if (properties)
         Object.keys(properties).forEach(key => newElement[key] = properties[key]);

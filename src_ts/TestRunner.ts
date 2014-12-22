@@ -1,9 +1,9 @@
 /// <reference path="Test.ts" />
 /// <reference path="Errors.ts" />
 
-interface Plugin {
-    setup : PluginFunction
-    test : PluginFunction
+interface TestPlugin {
+    setup(test : Test, go: TestFunction)
+    test(test : Test, go: TestFunction)
 }
 
 interface TestFunction {
@@ -15,7 +15,7 @@ interface PluginFunction {
 }
 
 class TestRunner {
-    private _plugins : Array<Plugin> = []; // NOCOMMIT func
+    private _plugins : Array<TestPlugin> = []; // NOCOMMIT func
     private _testQueue : Test[] = [];
     private _rootTests : Test[] = [];
     private _started : boolean = false;
@@ -86,7 +86,7 @@ class TestRunner {
         this._branchHasBeenRun = true;
     }
 
-    runStack(test : Test, innerMost : PluginFunction, runPlugin : (plugin : Plugin, test : Test, go : TestFunction) => void) {
+    runStack(test : Test, innerMost : PluginFunction, runPlugin : (plugin : TestPlugin, test : Test, go : TestFunction) => void) {
         var pluginsCopy = this._plugins.slice(0);
         var allPluginsRan = false;
 
@@ -118,7 +118,7 @@ class TestRunner {
         return this._rootTests;
     }
 
-    registerPlugin(...plugins : Plugin[]) : void {
+    registerPlugin(...plugins : TestPlugin[]) : void {
         for (var i = 0; i < plugins.length; i++)
             this._plugins.push(plugins[i]);
     }

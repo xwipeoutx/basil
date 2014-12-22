@@ -5,7 +5,7 @@ class Test {
     private _skipped : boolean = false;
     private _isComplete : boolean = false;
     private _inspect : (context : Object) => void = null;
-    private _inspectContext : Object = null;
+    private _inspectContext : any = null;
 
     constructor(private _name : string, private _parent : Test) {
         this._children = {};
@@ -80,5 +80,14 @@ class Test {
 
     get error() : string {
         return this._error;
+    }
+
+    inspect() : void {
+        debugger;
+        this._inspect(this._inspectContext); // Step into this
+    }
+
+    get code() : string {
+        return this._inspect.toString();
     }
 };
