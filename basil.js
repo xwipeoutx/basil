@@ -42,6 +42,7 @@
             }
 
             var test = this._createTest(name);
+            this._discoverTest(test);
 
             if (this._outerTest)
                 this._runSingleBranch(test, fn);
@@ -68,6 +69,14 @@
             return this._outerTest
                 ? this._outerTest.child(name)
                 : new Test(name);
+        },
+
+        _discoverTest: function(test) {
+            if (test.__isDiscovered)
+                return;
+
+            this.runPluginQueue('onDiscover', null, [test]);
+            test.__isDiscovered = true;
         },
 
         _runTree: function(test, fn) {

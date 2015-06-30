@@ -290,8 +290,36 @@
                         var testNames = pluginFunction.args.map(function (args) { return args[1].name() });
                         expect(testNames).to.contain.members(["Outer", "Inner1", "Outer", "Inner2"]);
                     });
-                })
-            })
+                });
+            });
+
+            when("an onDiscover plugin is registered", function() {
+                var pluginFunction = sinon.spy();
+                sut.registerPlugin({ onDiscover: pluginFunction });
+
+                when("running nested tests", function() {
+                    sut.test(function Outer() {
+                        sut.test(function Inner1() { });
+                        sut.test(function Inner2() { });
+                    });
+
+                    then("discover is called 3 times", function() {
+                        expect(pluginFunction.callCount).to.equal(3);
+                    });
+
+                    then("discover is called on outer test", function() {
+                        expect(pluginFunction.firstCall.args[0].name()).to.equal("Outer");
+                    });
+
+                    then("discover is called on first inner test", function() {
+                        expect(pluginFunction.secondCall.args[0].name()).to.equal("Inner1");
+                    });
+
+                    then("discover is called on second inner test", function() {
+                        expect(pluginFunction.thirdCall.args[0].name()).to.equal("Inner2");
+                    });
+                });
+            });
         });
     });
 

@@ -736,54 +736,86 @@ describe("Browser Runner", function() {
             });
         });
 
-        test("running tests", function() {
-            when("test doesn't match filter", function() {
-                var sut = filter('foo');
-                var test = new Basil.Test('bar');
-                sut.test(function() { }, test);
+        when("discovering tests", function() {
+            when("no filter is specified", function() {
+                var sut = filter('');
 
-                then("test is skipped", function() {
-                    expect(test.wasSkipped()).to.be.true;
-                });
-            });
-
-            when("top-level test is partial match", function() {
-                var sut = filter('foo');
-                var test = new Basil.Test('barfoo');
-                sut.test(function() { }, test);
-
-                then("test is run", function() {
-                    expect(test.wasSkipped()).to.be.false;
-                });
-            });
-
-            when("top-level test matches first part of filter", function() {
-                var sut = filter('foo>bar');
                 var test = new Basil.Test('foo');
-                sut.test(function() { }, test);
+                sut.onDiscover(test);
 
-                then("test is run", function() {
+                then("test is not skipped", function() {
                     expect(test.wasSkipped()).to.be.false;
                 });
             });
 
-            when("nested test is partial match", function() {
-                var sut = filter('foo>bar');
-                var test = new Basil.Test('foobar');
-                sut.test(function() { sut.test(function() { }, test); }, new Basil.Test('foo'));
+            when("filter is one level deep", function() {
+                var sut = filter("foo");
 
-                then("test is run", function() {
-                    expect(test.wasSkipped()).to.be.false;
+                when("test exactly matches filter", function() {
+                    var test = new Basil.Test('foo');
+                    sut.onDiscover(test);
+
+                    then("test is not skipped", function() {
+                        expect(test.wasSkipped()).to.be.false;
+                    });
+
+                    when("discovering a child", function() {
+                        var childTest = new Basil.Test('bar', test);
+                        sut.onDiscover(childTest);
+
+                        then("child test is not skipped", function() {
+                            expect(childTest.wasSkipped()).to.be.false;
+                        });
+                    });
+                });
+
+                when("test does not match filter", function() {
+                    var test = new Basil.Test('bar');
+                    sut.onDiscover(test);
+
+                    then("test is skipped", function() {
+                        expect(test.wasSkipped()).to.be.true;
+                    });
+                });
+
+                when("test partially matches filter", function() {
+                    var test = new Basil.Test("food");
+                    sut.onDiscover(test);
+
+                    then("test is not skipped", function() {
+                        expect(test.wasSkipped()).to.be.false;
+                    });
                 });
             });
 
-            when("nested test doesn't match second part of filter", function() {
-                var sut = filter('foo>bar');
-                var test = new Basil.Test('baz');
-                sut.test(function() { sut.test(function() { }, test); }, new Basil.Test('foo'));
+            when("filter is two levels deep", function() {
+                var sut = filter("foo>bar");
 
-                then("test is skipped", function() {
-                    expect(test.wasSkipped()).to.be.true;
+                when("test matches filter", function() {
+                    var test = new Basil.Test("foo");
+                    sut.onDiscover(test);
+
+                    then("test is not skipped", function() {
+                        expect(test.wasSkipped()).to.be.false;
+                    });
+
+                    when("child test matches filter", function() {
+                        var childTest = test.child("bar");
+                        sut.onDiscover(childTest);
+
+                        then("child test is not skipped", function() {
+                            expect(childTest.wasSkipped()).to.be.false;
+                        });
+                    });
+
+                    when("child test does not match filter", function() {
+                        var childTest = test.child("baz");
+                        sut.onDiscover(childTest);
+
+                        then("child test is skipped", function() {
+                            expect(childTest.wasSkipped()).to.be.true;
+                        });
+                    })
                 });
             });
 
