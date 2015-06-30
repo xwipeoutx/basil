@@ -18,14 +18,15 @@
         },
 
         start: function() {
-            if (!this._started) {
-                this._started = true;
-                this._testQueue.forEach(function (fn) {
-                    setTimeout(fn, 1);
-                });
+            if (this._started)
+                return;
 
-                this._testQueue = undefined;
-            }
+            this._started = true;
+            this._testQueue.forEach(function (fn) {
+                setTimeout(fn, 1);
+            });
+
+            delete this._testQueue;
         },
 
         abort: function(){
