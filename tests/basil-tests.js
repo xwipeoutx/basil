@@ -15,16 +15,16 @@
 
                         then(function () { expect(testFn).to.not.have.been.called; });
 
-                        when("after a timeout", function () {
+                        when("1ms passes", function () {
                             this.clock.tick(1);
 
                             then(function () { expect(testFn).to.have.been.called; });
 							
-							when("start again", function() {
+							when("starting again", function() {
 								testFn.reset();
 								sut.start();
 								
-								when("after a timeout", function () {
+								when("1ms passes", function () {
 									this.clock.tick(1);
 
 									then(function () { expect(testFn).to.have.not.been.called; });

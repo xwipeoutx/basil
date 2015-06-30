@@ -18,14 +18,14 @@
         },
 
         start: function() {
-			if(!this._started){
-				this._started = true;
-				this._testQueue.forEach(function(fn) {
-					setTimeout(fn, 1);
-				});
-				
-				this._testQueue = undefined;
-			}
+            if (!this._started) {
+                this._started = true;
+                this._testQueue.forEach(function (fn) {
+                    setTimeout(fn, 1);
+                });
+
+                this._testQueue = undefined;
+            }
         },
 
         abort: function(){
