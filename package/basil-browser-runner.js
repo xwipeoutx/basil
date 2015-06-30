@@ -449,7 +449,6 @@
     };
 
     Basil.filterPlugin = function(browserRunner, location) {
-        var testDepth = 0;
         var filterForm, filterInput;
         var filter = currentFilter(location);
         var filterParts = parseFilterText(filter);
@@ -490,21 +489,18 @@
                 });
             },
 
-            test: function(runTest, test) {
-                var testKey = test.key();
+            onDiscover: function(test) {
+                if (!filter)
+                    return;
 
-                var isPartialMatch = testKey.indexOf(filterParts[testDepth] || '') > -1;
-                var isExactMatch = testKey === filterParts[testDepth];
-                var testMatchesFilter = isExactMatch
-                    || (isPartialMatch && testDepth == filterParts.length - 1)
-                    || testDepth >= filterParts.length;
+                var testParts = test.fullKey().split(">");
 
-                if (!testMatchesFilter)
+                if (!filterParts.slice(0, testParts.length).every(matchesFilter))
                     test.skip();
 
-                testDepth++;
-                runTest();
-                testDepth--;
+                function matchesFilter(filterPart, index) {
+                    return testParts[index].indexOf(filterPart) >= 0;
+                }
             }
         };
 
