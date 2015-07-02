@@ -656,75 +656,123 @@ describe("Browser Runner", function() {
     });
 
     describe("Filter plugin", function() {
-        when("page is rendered", function() {
-            var location = { href: 'baz', search: '?filter=foo&other=bar' };
+        when("URL has a filter", function() {
+            var search = '?filter=foo&other=bar';
+            var location = {
+                href: 'baz' + search,
+                search: search
+            };
             var sut = Basil.filterPlugin(browserRunner, location);
             var header = this.dom.appendChild(document.createElement('div'));
-            sut.pageRender(header);
 
-            var filterForm = header.children[0];
-            filterForm.submit = sinon.spy();
+            when("page is rendered", function() {
+                sut.pageRender(header);
 
-            then("form added to header", function() {
-                expect(filterForm).to.be.an.instanceOf(HTMLFormElement);
-                expect(filterForm.innerText).to.equal('Filter');
+                var filterForm = header.children[0];
+                filterForm.submit = sinon.spy();
+
+                then("form added to header", function() {
+                    expect(filterForm).to.be.an.instanceOf(HTMLFormElement);
+                    expect(filterForm.innerText).to.equal('Filter');
+                });
+
+                then("filter form action is current page", function() {
+                    expect(filterForm.action).to.match(/\/baz$/);
+                });
+
+                var filterInput = header.children[0].children[0];
+
+                then("filter search box added to header", function() {
+                    expect(filterInput).to.be.an.instanceOf(HTMLInputElement);
+                    expect(filterInput.name).to.equal('filter');
+                    expect(filterInput.type).to.equal('search');
+                });
+
+                then("filter search box contains query string filter", function() {
+                    expect(filterInput.value).to.equal('foo');
+                });
+
+                then("filter search box is focused", function() {
+                    expect(document.activeElement).to.equal(filterInput);
+                });
+
+                when("filter form is submitted", function() {
+                    browserRunner.abort = sinon.spy();
+                    filterForm.dispatchEvent(new Event('submit'));
+
+                    then("test runner is aborted", function() {
+                        expect(browserRunner.abort).to.have.been.called;
+                    });
+                });
+
+                when("search event fired", function() {
+                    filterForm.dispatchEvent(new Event('search'));
+
+                    then("form is submitted", function() {
+                        expect(filterForm.submit).to.have.been.called;
+                    });
+                });
+
+                when("test is rendered", function () {
+                    var test = new Basil.Test('testname&special=characters');
+                    var testElement = document.createElement('div');
+                    sut.testRender(testElement, test);
+
+                    var icon = testElement.children[0];
+
+                    then("filter icon added to test element", function () {
+                        expect(icon.className).to.contain('icon-filter');
+                    });
+
+                    then("icon has title of 'Filter'", function () {
+                        expect(icon.title).to.equal('Filter');
+                    });
+
+                    then("icon has href that includes the encoded filter", function () {
+                        var encodedFilterKey = encodeURIComponent(test.fullKey());
+                        expect(icon.href).to.contain('baz?filter=' + encodedFilterKey);
+                    });
+                });
+
             });
+        });
 
-            then("filter form action is current page", function() {
-                expect(filterForm.action).to.match(/\/baz$/);
-            });
+        when("URL does not have a filter", function() {
+            var location = {
+                href: 'baz',
+                search: ''
+            };
 
-            var filterInput = header.children[0].children[0];
+            var sut = Basil.filterPlugin(browserRunner, location);
+            var header = this.dom.appendChild(document.createElement('div'));
 
-            then("filter search box added to header", function() {
-                expect(filterInput).to.be.an.instanceOf(HTMLInputElement);
-                expect(filterInput.name).to.equal('filter');
-                expect(filterInput.type).to.equal('search');
-            });
 
-            then("filter search box contains query string filter", function() {
-                expect(filterInput.value).to.equal('foo');
-            });
+            when("page is rendered", function() {
+                sut.pageRender(header);
 
-            then("filter search box is focused", function() {
-                expect(document.activeElement).to.equal(filterInput);
-            });
+                var filterForm = header.children[0];
+                filterForm.submit = sinon.spy();
+                var filterInput = header.children[0].children[0];
 
-            when("filter form is submitted", function() {
-                browserRunner.abort = sinon.spy();
-                filterForm.dispatchEvent(new Event('submit'));
+                then("filter form action is current page", function() {
+                    expect(filterForm.action).to.match(/\/baz$/);
+                });
 
-                then("test runner is aborted", function() {
-                    expect(browserRunner.abort).to.have.been.called;
+                then("filter search box contains query string filter", function() {
+                    expect(filterInput.value).to.equal('');
                 });
             });
 
-            when("search event fired", function() {
-                filterForm.dispatchEvent(new Event('search'));
-
-                then("form is submitted", function() {
-                    expect(filterForm.submit).to.have.been.called;
-                });
-            });
-
-            when("test is rendered", function() {
-                var test = new Basil.Test('testname&bar=baz');
+            when("test is rendered", function () {
+                var test = new Basil.Test('testname&special=characters');
                 var testElement = document.createElement('div');
                 sut.testRender(testElement, test);
 
                 var icon = testElement.children[0];
 
-                then("filter icon added to test element", function() {
-                    expect(icon.className).to.contain('icon-filter');
-                });
-
-                then("icon has title of 'Filter'", function() {
-                    expect(icon.title).to.equal('Filter');
-                });
-
-                then("icon has href that includes the encoded filter", function() {
+                then("icon has href that includes the encoded filter", function () {
                     var encodedFilterKey = encodeURIComponent(test.fullKey());
-                    expect(icon.href).to.contain('?filter=' + encodedFilterKey);
+                    expect(icon.href).to.contain('baz?filter=' + encodedFilterKey);
                 });
             });
         });

@@ -453,11 +453,13 @@
         var filter = currentFilter(location);
         var filterParts = parseFilterText(filter);
 
+        var baseUrl = location.href.replace(location.search, '');
+
         return {
             pageRender: function(header) {
                 filterForm = appendElement(header, 'form', {
                     className: 'basil-filter basil-header-section',
-                    action: location.href
+                    action: baseUrl
                 });
 
                 appendText(filterForm, 'Filter');
@@ -479,9 +481,9 @@
             },
 
             testRender: function(testElement, test) {
-                var filterElement = appendElement(testElement, 'a', {
+                appendElement(testElement, 'a', {
                     className: 'basil-icon basil-button icon-filter',
-                    href: "?filter=" + encodeURIComponent(test.fullKey()),
+                    href: baseUrl + "?filter=" + encodeURIComponent(test.fullKey()),
                     title: "Filter"
                 });
             },
