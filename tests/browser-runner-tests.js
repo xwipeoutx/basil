@@ -708,7 +708,7 @@ describe("Browser Runner", function() {
             });
 
             when("test is rendered", function() {
-                var test = new Basil.Test('testname');
+                var test = new Basil.Test('testname&bar=baz');
                 var testElement = document.createElement('div');
                 sut.testRender(testElement, test);
 
@@ -722,16 +722,9 @@ describe("Browser Runner", function() {
                     expect(icon.title).to.equal('Filter');
                 });
 
-                when("icon is clicked", function() {
-                    click(icon);
-
-                    then("filter search box is populated with test key", function() {
-                        expect(filterInput.value).to.equal(test.fullKey());
-                    });
-
-                    then("filter form is submitted", function() {
-                        expect(filterForm.submit).to.have.been.called;
-                    });
+                then("icon has href that includes the encoded filter", function() {
+                    var encodedFilterKey = encodeURIComponent(test.fullKey());
+                    expect(icon.href).to.contain('?filter=' + encodedFilterKey);
                 });
             });
         });
