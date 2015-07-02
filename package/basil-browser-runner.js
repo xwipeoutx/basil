@@ -479,13 +479,10 @@
             },
 
             testRender: function(testElement, test) {
-                var filterElement = appendElement(testElement, 'i', {
+                var filterElement = appendElement(testElement, 'a', {
                     className: 'basil-icon basil-button icon-filter',
+                    href: "?filter=" + encodeURIComponent(test.fullKey()),
                     title: "Filter"
-                });
-                filterElement.addEventListener('click', function() {
-                    filterInput.value = test.fullKey();
-                    filterForm.submit();
                 });
             },
 

@@ -103,6 +103,7 @@ button.basil-icon {
 .basil-button {
     opacity: 0.2;
     cursor: pointer;
+    color: hsl(200, 0%, 40%);
 }
 
 .basil-button:hover {
