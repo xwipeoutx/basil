@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "declaration": true,
+        "allowUnreachableCode": true
+    },
+    "compileOnSave": true,
+    "exclude": [
+        "node_modules",
+        "typings"
+    ]
+}

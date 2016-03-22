@@ -1,20 +1,20 @@
 {
-  "name": "basil",
+  "name": "BasilTS",
   "version": "1.0.0",
-  "description": "Javascript test runner with fluent hierarchical test setup",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/xwipeoutx/basil"
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [
-    "test",
-    "runner",
-    "bdd"
-  ],
-  "author": "Steve Leigh",
-  "license": "BSD 2-Clause",
-  "bugs": {
-    "url": "https://github.com/xwipeoutx/basil/issues"
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "gulp": "^3.9.0",
+    "gulp-typescript": "^2.9.2",
+    "sinon": "^1.17.3"
   },
-  "homepage": "https://github.com/xwipeoutx/basil"
+  "dependencies": {
+    "cli-color": "^1.1.0"
+  }
 }
