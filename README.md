@@ -1,10 +1,12 @@
-basil
-=====
+# basil
 
-Javascript test runner with hierarchical setup
+~~Java~~TypeScript test runner with hierarchical setup
 
-Example test (basil + chai.js)
-------------------------------
+```css
+Warning: This branch is under heavy development. Trust nothing. 
+```
+
+## Example test (basil + chai.js)
 
     describe("Teapot", function() {
         var teapot = new Teapot();
