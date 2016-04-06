@@ -6,5 +6,6 @@
         "src/**/*.js": true,
         "src/**/*.d.ts": true
     },
-    "editor.folding": true
+    "editor.folding": true,
+    "editor.fontSize": 24
 }

@@ -9,12 +9,13 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "chai": "^3.5.0",
+    "chai": "^3.4.0",
     "gulp": "^3.9.0",
     "gulp-typescript": "^2.9.2",
     "sinon": "^1.17.3"
   },
   "dependencies": {
-    "cli-color": "^1.1.0"
+    "cli-color": "^1.1.0",
+    "glob": "^7.0.3"
   }
 }

@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-/// <reference path="../typings/browser.d.ts" />
+// <reference path="../typings/browser.d.ts" />
 var basil_1 = require("./basil");
 var BrowserRunner = (function (_super) {
     __extends(BrowserRunner, _super);

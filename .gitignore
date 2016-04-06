@@ -1,0 +1,7 @@
+node_modules
+typings
+**/*.d.ts
+src/**/*.js
+test/**/*.js
+index.js
+index.d.ts

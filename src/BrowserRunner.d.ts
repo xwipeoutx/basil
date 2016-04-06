@@ -1,4 +1,3 @@
-/// <reference path="../typings/browser.d.ts" />
 import { Test, TestPlugin, TestFunction, TestRunner } from "./basil";
 export interface BrowserPlugin extends TestPlugin {
     pageRender(header: HTMLElement, results: HTMLElement): void;

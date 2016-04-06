@@ -2,5 +2,8 @@
   "ambientDependencies": {
     "cli-color": "registry:dt/cli-color#0.0.0+20160317120654",
     "node": "registry:dt/node#4.0.0+20160319033040"
-  }  
+  },
+  "ambientDevDependencies": {
+    "sinon": "registry:dt/sinon#1.16.0+20160317120654"
+  }
 }

@@ -9,12 +9,11 @@ exports.PluginDidNotDelegateError = PluginDidNotDelegateError;
 var TestRunner = (function () {
     function TestRunner(events) {
         this.events = events;
-        this._plugins = [];
         this._testQueue = [];
         this._rootTests = [];
         this._aborted = false;
         this._outerTest = null;
-        this._branchHasBeenRun = false;
+        this._leafTest = null;
         this.leaves = [];
         this.passed = [];
         this.failed = [];
@@ -33,60 +32,39 @@ var TestRunner = (function () {
         return test;
     };
     TestRunner.prototype._createTest = function (name) {
-        return this._outerTest
+        var test = this._outerTest
             ? this._outerTest.child(name)
-            : new Test(name, null, {});
+            : new Test(name, null);
+        if (!test.isDiscovered) {
+            test.isDiscovered = true;
+            this.events.nodeFound.next(test);
+        }
+        return test;
     };
     TestRunner.prototype._startRun = function (test, testFunction) {
         this._rootTests.push(test);
         this.events.rootStarted.next(test);
         while (!test.isComplete) {
-            this._branchHasBeenRun = false;
+            this._leafTest = null;
             this._continueRun(test, testFunction);
+            this.events.leafComplete.next(this._leafTest);
         }
         this.events.rootComplete.next(test);
     };
     TestRunner.prototype._continueRun = function (test, testFunction) {
-        if (test.isComplete || this._branchHasBeenRun) {
+        if (test.isComplete || this._leafTest != null)
             return;
-        }
-        for (var i = 0; i < 200000000; i++)
-            i = i + 1 - 1;
         this._runTestFunction(test, testFunction);
-        this._branchHasBeenRun = true;
-    };
-    TestRunner.prototype.runStack = function (onComplete, runPlugin) {
-        var pluginsRun = [];
-        var pluginsCopy = this._plugins.slice(0);
-        var allPluginsRan = false;
-        runNextPlugin();
-        if (!allPluginsRan)
-            throw new PluginDidNotDelegateError();
-        function runNextPlugin() {
-            if (pluginsCopy.length > 0) {
-                var plugin = pluginsCopy.pop();
-                pluginsRun.push(plugin);
-                runPlugin(plugin, runNextPlugin);
-            }
-            else {
-                onComplete();
-                allPluginsRan = true;
-            }
-        }
     };
     TestRunner.prototype._runTestFunction = function (test, testFunction) {
-        if (test.isComplete || this._branchHasBeenRun)
-            return;
-        if (test.runCount == 0)
-            this.events.nodeFound.next(test);
         var outerTest = this._outerTest;
         this._outerTest = test;
         this.events.nodeEntered.next(test);
         test.run(testFunction);
         this.events.nodeExited.next(test);
-        if (test.isComplete && !test.children.length && !test.wasSkipped)
-            this.recordCompletion(test);
         this._outerTest = outerTest;
+        if (test.isComplete && !test.children.length && !test.wasSkipped)
+            this._leafTest = test;
     };
     TestRunner.prototype.recordCompletion = function (test) {
         this.events.leafComplete.next(test);
@@ -103,28 +81,19 @@ var TestRunner = (function () {
         enumerable: true,
         configurable: true
     });
-    TestRunner.prototype.registerPlugin = function () {
-        var plugins = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            plugins[_i - 0] = arguments[_i];
-        }
-        for (var i = 0; i < plugins.length; i++)
-            this._plugins.push(plugins[i]);
-    };
     return TestRunner;
 }());
 exports.TestRunner = TestRunner;
 var Test = (function () {
-    function Test(_name, _parent, _context) {
+    function Test(_name, _parent) {
         this._name = _name;
         this._parent = _parent;
-        this._context = _context;
         this._runCount = 0;
         this._error = null;
         this._skipped = false;
         this._isComplete = false;
         this._inspect = null;
-        this._inspectContext = null;
+        this.isDiscovered = false;
         this._children = {};
     }
     Object.defineProperty(Test.prototype, "name", {
@@ -164,7 +133,7 @@ var Test = (function () {
         if (this._skipped)
             return;
         try {
-            fn.call(this._context);
+            fn();
         }
         catch (error) {
             if (!(error instanceof Error))
@@ -191,10 +160,13 @@ var Test = (function () {
         enumerable: true,
         configurable: true
     });
+    Test.prototype.hasChild = function (name) {
+        return !!this._children[name];
+    };
     Test.prototype.child = function (name) {
-        if (this._children[name])
+        if (this.hasChild(name))
             return this._children[name];
-        return this._children[name] = new Test(name, this, {});
+        return this._children[name] = new Test(name, this);
     };
     Object.defineProperty(Test.prototype, "children", {
         get: function () {
@@ -223,18 +195,11 @@ var Test = (function () {
     });
     Test.prototype.inspect = function () {
         debugger;
-        this._inspect(this._context); // Step into this
+        this._inspect(); // Step into this
     };
     Object.defineProperty(Test.prototype, "code", {
         get: function () {
             return this._inspect ? this._inspect.toString() : null;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Test.prototype, "thisValue", {
-        get: function () {
-            return this._context;
         },
         enumerable: true,
         configurable: true

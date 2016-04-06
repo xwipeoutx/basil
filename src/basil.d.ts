@@ -10,23 +10,20 @@ export interface TestFunction {
 }
 export declare class TestRunner {
     private events;
-    private _plugins;
     private _testQueue;
     private _rootTests;
     private _aborted;
     private _outerTest;
-    private _branchHasBeenRun;
+    private _leafTest;
     constructor(events: TestEvents);
     abort(): void;
     runTest(name: string, fn: TestFunction): Test;
     _createTest(name: string): Test;
     _startRun(test: Test, testFunction: TestFunction): void;
     _continueRun(test: Test, testFunction: TestFunction): void;
-    runStack(onComplete: TestFunction, runPlugin: (plugin: TestPlugin, go: TestFunction) => void): void;
     _runTestFunction(test: Test, testFunction: TestFunction): void;
     private recordCompletion(test);
     tests: Test[];
-    registerPlugin(...plugins: TestPlugin[]): void;
     leaves: Test[];
     passed: Test[];
     failed: Test[];
@@ -34,15 +31,14 @@ export declare class TestRunner {
 export declare class Test {
     private _name;
     private _parent;
-    private _context;
     private _runCount;
     private _children;
     private _error;
     private _skipped;
     private _isComplete;
     private _inspect;
-    private _inspectContext;
-    constructor(_name: string, _parent: Test, _context: any);
+    isDiscovered: boolean;
+    constructor(_name: string, _parent: Test);
     name: string;
     key: string;
     fullKey: string;
@@ -51,13 +47,13 @@ export declare class Test {
     skip(): void;
     wasSkipped: boolean;
     runCount: number;
+    hasChild(name: string): boolean;
     child(name: string): Test;
     children: Array<Test>;
     hasPassed: boolean;
-    error: string;
+    error: Error;
     inspect(): void;
     code: string;
-    thisValue: any;
 }
 export declare class EventStream<T> {
     private callbacks;

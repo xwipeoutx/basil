@@ -54,7 +54,7 @@ function hookNodeListeners() {
         if (test.hasPassed)
             return;
         if (test.error != null) {
-            console.log(spaces(depth) + col.yellow("> " + test.error));
+            console.log(spaces(depth) + col.yellow("> " + test.error.stack));
         }
         test.children.forEach(function (t) { return writeStatus(t, depth + 1); });
     }

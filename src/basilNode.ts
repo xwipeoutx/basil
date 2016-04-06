@@ -63,7 +63,7 @@ export function hookNodeListeners() {
             return;
 
         if (test.error != null) {
-            console.log(spaces(depth) + col.yellow("> " + test.error));
+            console.log(spaces(depth) + col.yellow("> " + test.error.stack));
         }
 
         test.children.forEach(t => writeStatus(t, depth + 1));
