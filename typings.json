@@ -5,5 +5,9 @@
   },
   "ambientDevDependencies": {
     "sinon": "registry:dt/sinon#1.16.0+20160317120654"
+  },
+  "dependencies": {
+    "chai": "registry:npm/chai#3.5.0+20160415060238",
+    "sinon-chai": "registry:npm/sinon-chai#2.8.0+20160310030142"
   }
 }

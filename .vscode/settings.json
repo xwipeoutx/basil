@@ -3,9 +3,15 @@
     "files.exclude": {
         "**/.git": true,
         "**/.DS_Store": true,
+        "test/**/*.js": true,
+        "test/**/*.d.ts": true,
         "src/**/*.js": true,
-        "src/**/*.d.ts": true
+        "src/**/*.d.ts": true,
+        "index.js":true,
+        "index.d.ts": true,
+        "typings": true,
+        "node_modules": true,
+        "dist": true
     },
-    "editor.folding": true,
-    "editor.fontSize": 24
+    "editor.folding": true
 }

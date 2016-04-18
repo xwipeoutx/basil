@@ -1,4 +1,4 @@
-/// <reference path="../typings/chai/Chai.d.ts" />
+/// <reference path="../typings/main.d.ts" />
 import {describe, when, then, it} from "../src/basil";
 import * as Basil from "../src/basil"
 import * as sinon from "sinon";
