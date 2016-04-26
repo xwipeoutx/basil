@@ -1,16 +1,16 @@
-# basil
+# Grebe
 
-~~Java~~TypeScript test runner with hierarchical setup
+JavaScript/TypeScript test runner with nested setup
 
-```css
-Warning: This branch is under heavy development. Trust nothing. 
-```
+## Sample test
 
-## Example test (basil + chai.js)
+This is the sort of code to expect from Grebe.
+
+It has infinite nesting, doesn't require `beforeEach` functions and reads like a dream.
 
 ```js
-// Basil imports
-import { describe, when, then, it } from "../src/basil";
+// Grebe imports
+import { describe, when, then, it } from "../src/grebe";
 
 // third-party imports for assertions and mocking
 import { expect, should } from "chai";

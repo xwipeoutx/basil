@@ -1,12 +1,12 @@
 /// <reference path="../typings/main.d.ts" />
-import {describe, when, then, it} from "../src/basil";
-import * as Basil from "../src/basil"
+import { describe, when, then, it } from "../src/grebe";
+import * as grebe from "../src/grebe"
 import * as sinon from "sinon";
 import { expect } from "chai";
 
 describe("TestRunner", () => {
-    var testEvents = new Basil.TestEvents();
-    var sut = new Basil.TestRunner(testEvents);
+    var testEvents = new grebe.TestEvents();
+    var sut = new grebe.TestRunner(testEvents);
 
     when("running a test", () => {
         var testFn = sinon.spy();
@@ -47,7 +47,7 @@ describe("TestRunner", () => {
         });
 
         when("running a test method with an inner test method call", () => {
-            var innerResult: Basil.Test;
+            var innerResult: grebe.Test;
             var innerTestFunction = sinon.stub();
             var testFunction = sinon.spy(() => {
                 innerResult = sut.runTest("Inner Test", innerTestFunction);
@@ -65,7 +65,7 @@ describe("TestRunner", () => {
         });
 
         when("running a test method with 2 inner test method calls", () => {
-            var innerResult: Basil.Test, innerResult2: Basil.Test;
+            var innerResult: grebe.Test, innerResult2: grebe.Test;
             var innerFunction1 = sinon.stub();
             var innerFunction2 = sinon.stub();
             var testFunction = sinon.spy(() => {
@@ -80,7 +80,7 @@ describe("TestRunner", () => {
         });
 
         when("running a test method with 3 inner test method calls", () => {
-            var innerResult: Basil.Test, innerResult2: Basil.Test, innerResult3: Basil.Test;
+            var innerResult: grebe.Test, innerResult2: grebe.Test, innerResult3: grebe.Test;
             var result = sut.runTest("Outer Test", () => {
                 innerResult = sut.runTest("Inner Test", () => { });
                 innerResult2 = sut.runTest("Inner Test 2", () => { });
@@ -93,7 +93,7 @@ describe("TestRunner", () => {
         });
 
         when("running a test method with a double nested test method call", () => {
-            var innerResult: Basil.Test, innerInnerResult: Basil.Test, innerInnerResult2: Basil.Test;
+            var innerResult: grebe.Test, innerInnerResult: grebe.Test, innerInnerResult2: grebe.Test;
             var result = sut.runTest("Outer Test", () => {
                 innerResult = sut.runTest("Inner Test", () => {
                     innerInnerResult = sut.runTest("Inner Inner Test", () => { });
@@ -109,7 +109,7 @@ describe("TestRunner", () => {
     });
 
     describe("event raising", () => {
-        var allCalls: { functionName: string, test?: Basil.Test }[] = [];
+        var allCalls: { functionName: string, test?: grebe.Test }[] = [];
 
         testEvents.rootStarted.subscribe(t => allCalls.push({ functionName: "rootStarted", test: t }));
         testEvents.rootComplete.subscribe(t => allCalls.push({ functionName: "rootComplete", test: t }));
@@ -135,7 +135,7 @@ describe("TestRunner", () => {
                 var expectedCalls: { functionName: string, name?: string }[] = [
                     { functionName: "nodeFound", name: "OuterTest" },
                     { functionName: "rootStarted", name: "OuterTest" },
-                    
+
                     { functionName: "nodeEntered", name: "OuterTest" },
                     /**/{ functionName: "OuterSetup", name: null },
                     /**/{ functionName: "nodeFound", name: "InnerTest1" },
@@ -148,7 +148,7 @@ describe("TestRunner", () => {
                     /**/{ functionName: "OuterTearDown", name: null },
                     { functionName: "nodeExited", name: "OuterTest" },
                     { functionName: "leafComplete", name: "InnerTest1" },
-                    
+
                     { functionName: "nodeEntered", name: "OuterTest" },
                     /**/{ functionName: "OuterSetup", name: null },
                     // skipped?
@@ -159,12 +159,12 @@ describe("TestRunner", () => {
                     /**/{ functionName: "OuterTearDown", name: null },
                     { functionName: "nodeExited", name: "OuterTest" },
                     { functionName: "leafComplete", name: "InnerTest2" },
-                    
+
                     { functionName: "rootComplete", name: "OuterTest" }
                 ]
 
                 var namedCalls = allCalls.map(c => { return { functionName: c.functionName, name: c.test ? c.test.name : null } });
-                
+
                 expect(namedCalls).to.deep.equal(expectedCalls);
             });
         });
@@ -172,7 +172,7 @@ describe("TestRunner", () => {
 });
 
 describe("Test", () => {
-    var sut = new Basil.Test("Test Name", null);
+    var sut = new grebe.Test("Test Name", null);
 
     it("has correct name", () => { expect(sut.name).to.equal("Test Name"); });
     it("is not complete", () => { expect(sut.isComplete).to.be.false; });

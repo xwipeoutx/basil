@@ -1,5 +1,5 @@
-// Basil imports
-import { describe, when, then, it } from "../src/basil";
+// Grebe imports
+import { describe, when, then, it } from "../src/grebe";
 
 // third-party imports for assertions and mocking
 import { expect, should } from "chai";

@@ -1,4 +1,4 @@
-import * as basil from "./src/basil";
+import * as grebe from "./src/grebe";
 import { NodeTestReporter } from "./src/nodeTestReporter";
 import * as program from "commander"
 import * as glob from "glob";
@@ -26,7 +26,7 @@ var reporterOptions = {
 var initial: string[] = [];
 var files = globs.reduce((result, pattern) => result.concat(glob.sync(pattern, globOptions)), initial);
 
-var reporter = new NodeTestReporter(basil.events, reporterOptions);
+var reporter = new NodeTestReporter(grebe.events, reporterOptions);
 files.forEach(f => require('./' + f));
 
 reporter.writeSummary();

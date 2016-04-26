@@ -1,4 +1,4 @@
-import { describe, when, then, it } from "../src/basil";
+import { describe, when, then, it } from "../src/grebe";
 import { expect, should } from "chai";
 import * as sinon from "sinon";
 
