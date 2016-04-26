@@ -4,9 +4,10 @@ import * as program from "commander"
 import * as glob from "glob";
 
 program
-    .version("0.0.1")
+    .version("0.1.1")
     .usage("<glob...>")
     .option("-t, --tree", "Show full test tree")
+    .option("-h, --hide-stack", "Hide the stack trace")
     .option("-q, --quiet", "Hide all console output")
     .parse(process.argv);
 
@@ -18,7 +19,8 @@ var globOptions: any = {
 
 var reporterOptions = {
     quiet: program.opts().quiet,
-    showTree: program.opts().tree
+    showTree: program.opts().tree,
+    hideStack: program.opts().hideStack
 }
 
 var initial: string[] = [];

@@ -1,14 +1,3 @@
-# basil
-
-~~Java~~TypeScript test runner with hierarchical setup
-
-```css
-Warning: This branch is under heavy development. Trust nothing. 
-```
-
-## Example test (basil + chai.js)
-
-```js
 // Basil imports
 import { describe, when, then, it } from "../src/basil";
 
@@ -80,4 +69,3 @@ describe("Bird", () => {
     // In this case, restore the sinon clock.
     clock.restore();
 });
-```

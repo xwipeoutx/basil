@@ -1,60 +1,68 @@
-import {describe, when, then, it} from "../src/basil";
+import { describe, when, then, it } from "../src/basil";
+import { expect, should } from "chai";
+import * as sinon from "sinon";
 
-describe("Assertions", function() {
-    it("runs on any test assertion library", function() {
+should();
 
+describe("Assertions", () => {
+    it("Works with chai", () => {
+        "runsOnChai".should.not.be.false;
     });
 });
 
-describe("Mocking", function() {
-    //var sampleFunc = this.stub();
-    //sampleFunc();
+describe("Mocking", () => {
+    var sampleFunc = sinon.stub();
+    sampleFunc();
 
-    it("provides an adapter for SinonJS", function() {
-
+    it("Works with sinon", () => {
+        sampleFunc.should.have.been.called;
     });
-
-    it("is simple to adapt in any other mocking framework", function() { });
 });
 
-describe("Nested test setup", function() {
-    when("a variable is declared", function() {
+describe("Nested test setup", () => {
+    when("a variable is declared", () => {
         var variable = "initially declared value";
 
-        then("it can be asserted on in a test", function() {
+        then("it can be asserted on in a test", () => {
+            variable.should.equal("initially declared value");
         });
 
-        when("the variable is changed", function() {
+        when("the variable is changed", () => {
             variable = "changed value";
 
-            then("the new value can be asserted on", function() {
+            then("the new value can be asserted on", () => {
+                variable.should.equal("changed value");
             })
         });
 
-        it("has not run previous test setups", function() {
+        it("has not run previous test setups", () => {
+            variable.should.equal("initially declared value");
         });
 
         variable = null;
 
-        it("runs additional code", function() {
+        it("runs additional code", () => {
+            expect(variable).to.be.null;
         });
 
-        when("there", function() {
+        when("there", () => {
             var codeReadability = "no ";
 
-            when("is", function() {
+            when("is", () => {
                 codeReadability += "nonsense ";
 
-                when("a lot of", function() {
+                when("a lot of", () => {
                     codeReadability += "and ";
 
-                    when("nested", function() {
+                    when("nested", () => {
                         codeReadability += "easily "
 
-                        when("setup", function() {
+                        when("setup", () => {
                             codeReadability += "read.";
 
-                            then("assert", function() { })
+                            then("assert", () => {
+                                codeReadability.should.equal("no nonsense and easily read.");
+                            })
                         });
                     });
                 });
@@ -63,55 +71,22 @@ describe("Nested test setup", function() {
     });
 });
 
-describe("Test names", function() {
-    when("a name is supplied", function() {
-        then("supplied test name is used", function() { });
-    });
-
-    when("no name is supplied", function() {
-        var testName = "contents of function";
-        then(testName, function() {
-        });
-    })
-});
-
-describe("Failures", function() {
-    when("a test failure", function() {
-        it("can be inspected", function() {
-            throw new Error("Error message");
-        });
-
-        then("code can be seen", function() {
-            throw new Error("Error message");
-        });
-
-        when("in a browser", function() {
-            then("favicon is updated to a failed one", function() { });
-        });
-    });
-
-    when("an Error is thrown", function() {
-        throw new Error("Example error");
-
-        it("does not make it to subsequent tests", function() {
+describe("Sample Failure", () => {
+    when("a test fails", () => {
+        it("can be viewed", () => {
             throw new Error("Error message");
         });
     });
 
-    when("in a later test", function() {
-        then("previous failures do not affect it", function() { });
+    when("in a later test", () => {
+        it("hasn't been affected by an earlier failure", () => {
+            true.should.be.true;
+        });
     });
 });
 
-describe("DOM fixture", function() {
-    it("provides an attached dom element", function() {
-
-    });
-
-    it("uses a new element per setup", function() {
-
-    });
-
-    it("cleans up the dom element when done", function() {
+describe("Test name", () => {
+    it("comes from first argument", () => {
+        true.should.be.true;
     });
 });

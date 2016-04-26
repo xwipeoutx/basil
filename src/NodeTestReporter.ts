@@ -5,6 +5,7 @@ import * as col from "cli-color"
 export interface TestReporterOptions {
     quiet?: boolean
     showTree?: boolean
+    hideStack?: boolean
 }
 
 export class NodeTestReporter {
@@ -40,8 +41,8 @@ export class NodeTestReporter {
         if (!this.options.showTree && test.hasPassed)
             return;
 
-        if (test.error != null) {
-            console.log(this.spaces(depth) + col.yellow("> " + test.error.stack));
+        if (test.error != null && !this.options.hideStack) {
+            console.log(this.spaces(depth), col.yellow("> " + test.error.stack));
         }
 
         test.children.forEach(t => this.writeStatus(t, depth + 1));

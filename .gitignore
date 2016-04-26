@@ -4,5 +4,7 @@ typings
 **/*.d.ts
 src/**/*.js
 test/**/*.js
+sample/**/*.js
 index.js
 index.d.ts
+

@@ -1,6 +1,6 @@
 {
   "name": "grebe",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "Unit test runner with infinitely nested test setup",
   "repository": {
     "type": "git",
@@ -8,7 +8,8 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "node index"
+    "test": "node index",
+    "sample": "node index"
   },
   "author": "Steve Leigh (xwipeoutx@gmail.com)",
   "license": "ISC",
