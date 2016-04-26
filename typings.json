@@ -1,6 +1,7 @@
 {
   "ambientDependencies": {
     "cli-color": "registry:dt/cli-color#0.0.0+20160317120654",
+    "commander": "registry:dt/commander#2.3.0+20160317120654",
     "node": "registry:dt/node#4.0.0+20160319033040"
   },
   "ambientDevDependencies": {
@@ -8,6 +9,7 @@
   },
   "dependencies": {
     "chai": "registry:npm/chai#3.5.0+20160415060238",
+    "glob": "registry:npm/glob#6.0.0+20160211003958",
     "sinon-chai": "registry:npm/sinon-chai#2.8.0+20160310030142"
   }
 }

@@ -1,12 +1,16 @@
 {
-  "name": "BasilTS",
-  "version": "1.0.0",
-  "description": "",
+  "name": "grebe",
+  "version": "0.0.1",
+  "description": "Unit test runner with infinitely nested test setup",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xwipeoutx/grebe-js"
+  },
   "main": "index.js",
   "scripts": {
     "test": "node index"
   },
-  "author": "",
+  "author": "Steve Leigh (xwipeoutx@gmail.com)",
   "license": "ISC",
   "devDependencies": {
     "chai": "^3.4.0",
@@ -15,6 +19,7 @@
   },
   "dependencies": {
     "cli-color": "^1.1.0",
+    "commander": "^2.9.0",
     "glob": "^7.0.3"
   }
 }

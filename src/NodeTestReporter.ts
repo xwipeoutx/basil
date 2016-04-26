@@ -2,40 +2,33 @@
 import * as basil from "./basil";
 import * as col from "cli-color"
 
+export interface TestReporterOptions {
+    quiet?: boolean
+    showTree?: boolean
+}
+
 export class NodeTestReporter {
     private numTests: number = 0
     private numPassed: number = 0
     private numFailed: number = 0
 
-    private loadingIndicators = ['|', '/', '-', '\\']
-    private loadingIndex = 0;
     private depths: { [key: string]: number } = {};
     private depth = 1;
 
-    constructor(private testEvents: basil.TestEvents) {
-
+    constructor(private testEvents: basil.TestEvents, private options: TestReporterOptions = {}) {
         testEvents.leafComplete.subscribe(test => {
             this.numTests++;
             if (test.hasPassed)
                 this.numPassed++;
             else
                 this.numFailed++;
-        })
-
-        testEvents.nodeEntered.subscribe(test => {
-            var loadingIndicator = this.loadingIndicators[this.loadingIndex];
-            this.loadingIndex = (this.loadingIndex + 1) % this.loadingIndicators.length;
-
-            console.log(col.move(0, -1) + loadingIndicator);
-            this.depth++;
         });
-        testEvents.nodeExited.subscribe(test => this.depth--);
 
-        testEvents.rootStarted.subscribe(test => console.log(this.spaces() + test.name));
-        testEvents.rootComplete.subscribe(test => {
-            console.log(col.move(0, -2));
-            this.writeStatus(test, this.depth);
-        });
+        if (!options.quiet) {
+            testEvents.nodeEntered.subscribe(test => this.depth++);
+            testEvents.nodeExited.subscribe(test => this.depth--);
+            testEvents.rootComplete.subscribe(test => this.writeStatus(test, this.depth));
+        }
     }
 
     private writeStatus(test: basil.Test, depth: number) {
@@ -44,7 +37,7 @@ export class NodeTestReporter {
 
         console.log(color(this.spaces(depth - 1) + indicator + " " + color(test.name)));
 
-        if (test.hasPassed)
+        if (!this.options.showTree && test.hasPassed)
             return;
 
         if (test.error != null) {
@@ -63,6 +56,9 @@ export class NodeTestReporter {
     get hasErrors() { return this.numFailed > 0 || this.numTests == 0; }
 
     writeSummary() {
+        if (this.options.quiet)
+            return;
+
         console.log();
         if (this.numFailed > 0) {
             console.log(col.red("Test run Failed"));
