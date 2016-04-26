@@ -1,5 +1,5 @@
 import * as grebe from "./src/grebe";
-import { NodeTestReporter } from "./src/nodeTestReporter";
+import { NodeTestReporter } from "./src/node-reporter";
 import * as program from "commander"
 import * as glob from "glob";
 
