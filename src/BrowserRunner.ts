@@ -81,11 +81,4 @@ export class BrowserRunner extends TestRunner {
     private complete() {
         this._browserPlugins.forEach(plugin => plugin.onComplete());
     }
-
-    registerBrowserPlugins(plugins: BrowserPlugin[]): void {
-        for (var i = 0; i < plugins.length; i++) {
-            this._browserPlugins.push(plugins[i]);
-            super.registerPlugin(plugins[i]);
-        }
-    }
 }

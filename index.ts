@@ -1,16 +1,17 @@
-import * as nodeRunner from "./src/basilNode";
+import * as basil from "./src/basil";
+import { NodeTestReporter } from "./src/nodeTestReporter";
 var glob = require("glob");
 
-nodeRunner.hookNodeListeners();
+var reporter = new NodeTestReporter(basil.events);
 
 glob("test/**/*.js", {
     realPath: true
 }, (err: string, files: string[]) => {
     files.forEach(f => require('./' + f));
 
-    nodeRunner.writeSummary();
+    reporter.writeSummary();
     
-    if (nodeRunner.hasErrors()) {
+    if (reporter.hasErrors) {
         process.exit(2);
     } else {
         process.exit(0);

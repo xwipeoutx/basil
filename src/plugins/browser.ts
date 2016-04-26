@@ -2,30 +2,30 @@ import { Test, TestFunction, TestPlugin, TestRunner } from "../basil"
 import { BrowserPlugin } from "../BrowserRunner"
 
 class BaseTestPlugin implements TestPlugin {
-    setup(test:Test, go:TestFunction) {
+    setup(test: Test, go: TestFunction) {
         go();
     }
 
-    test(test:Test, go:TestFunction) {
+    test(test: Test, go: TestFunction) {
         go();
     }
 
-    pageRender(header:HTMLElement, results:HTMLElement):void {
+    pageRender(header: HTMLElement, results: HTMLElement): void {
     }
 
-    testRender(testElement:HTMLElement, test:Test):void {
+    testRender(testElement: HTMLElement, test: Test): void {
     }
 
-    onComplete():void {
+    onComplete(): void {
     }
 }
 
 class BigTitlePlugin extends BaseTestPlugin implements BrowserPlugin {
-    constructor(private location : Location) {
+    constructor(private location: Location) {
         super();
     }
 
-    pageRender(header:HTMLElement, results:HTMLElement):void {
+    pageRender(header: HTMLElement, results: HTMLElement): void {
         var title = document.createElement('a');
         title.href = this.location.href.replace(location.search, '');
         title.textContent = document.title || 'Basil';
@@ -34,24 +34,24 @@ class BigTitlePlugin extends BaseTestPlugin implements BrowserPlugin {
         header.appendChild(title);
     }
 
-    testRender(testElement:HTMLElement, test:Test):void {
+    testRender(testElement: HTMLElement, test: Test): void {
     }
 
-    onComplete():void {
+    onComplete(): void {
     }
 }
 
 class DisplayTestCountPlugin extends BaseTestPlugin implements BrowserPlugin {
-    passed : HTMLSpanElement;
-    failed : HTMLSpanElement;
+    passed: HTMLSpanElement;
+    failed: HTMLSpanElement;
     total: HTMLSpanElement;
-    originalTitle : string;
+    originalTitle: string;
 
-    constructor(private testRunner : TestRunner) {
+    constructor(private testRunner: TestRunner) {
         super();
     }
 
-    setup(test:Test, go:TestFunction) {
+    setup(test: Test, go: TestFunction) {
         go();
 
 
@@ -62,7 +62,7 @@ class DisplayTestCountPlugin extends BaseTestPlugin implements BrowserPlugin {
         document.title = "[" + this.testRunner.passed + '/' + this.testRunner.failed + '/' + this.testRunner.leaves.length + "] " + this.originalTitle;
     }
 
-    pageRender(header:HTMLElement, results:HTMLElement):void {
+    pageRender(header: HTMLElement, results: HTMLElement): void {
         this.originalTitle = document.title;
 
         var container = document.createElement('div');
@@ -86,19 +86,20 @@ class DisplayTestCountPlugin extends BaseTestPlugin implements BrowserPlugin {
         container.appendChild(this.total);
     }
 
-    testRender(testElement:HTMLElement, test:Test):void {
+    testRender(testElement: HTMLElement, test: Test): void {
     }
 
-    onComplete():void {
+    onComplete(): void {
     }
 
 }
 
 class DomFixturePlugin extends BaseTestPlugin implements TestPlugin {
-    setup(test:Test, go:TestFunction) {
-        var domElement : HTMLDivElement = null;
+    setup(test: Test, go: TestFunction) {
+        var domElement: HTMLDivElement = null;
 
-        Object.defineProperty(test.thisValue, 'dom', {
+        var someFixture = {};
+        Object.defineProperty(someFixture, 'dom', {
             get: function () {
                 if (domElement != null)
                     return domElement;
@@ -121,29 +122,30 @@ class DomFixturePlugin extends BaseTestPlugin implements TestPlugin {
 }
 
 class ErrorTextPlugin extends BaseTestPlugin implements BrowserPlugin {
-    pageRender(header:HTMLElement, results:HTMLElement):void {
+    pageRender(header: HTMLElement, results: HTMLElement): void {
     }
 
-    testRender(testElement:HTMLElement, test:Test):void {
+    testRender(testElement: HTMLElement, test: Test): void {
         if (test.error) {
             var errorElement = appendElement(testElement, 'pre');
-            appendText(errorElement, test.error);
+            appendText(errorElement, test.error.message);
         }
     }
 
-    onComplete():void {
+    onComplete(): void {
     }
 }
 
 class ExpandCollapsePlugin extends BaseTestPlugin implements BrowserPlugin {
-    prefix : string = 'basil-collapsed-';
-    updateAllTests : Array<() => void> = [];
+    prefix: string = 'basil-collapsed-';
+    updateAllTests: Array<() => void> = [];
 
-    constructor(private localStorage : Storage) {
+    constructor(private localStorage: Storage) {
         super();
     }
 
-    pageRender(header:HTMLElement, results:HTMLElement):void {var container = appendElement(header, 'span', { className: 'basil-expand-collapse-all' });
+    pageRender(header: HTMLElement, results: HTMLElement): void {
+        var container = appendElement(header, 'span', { className: 'basil-expand-collapse-all' });
         var expandAll = appendElement(container, 'label', { className: 'basil-expand-all basil-header-section basil-header-button' });
         appendElement(expandAll, 'button', { className: 'basil-icon icon-plus-sign-alt' });
         appendText(expandAll, 'Expand all');
@@ -157,31 +159,31 @@ class ExpandCollapsePlugin extends BaseTestPlugin implements BrowserPlugin {
         this.updateCollapseAllState(results);
     }
 
-    private setCollapseAll(resultsElement : HTMLElement, isCollapseAll : boolean) {
-        Object.keys(localStorage).forEach(function(key) {
+    private setCollapseAll(resultsElement: HTMLElement, isCollapseAll: boolean) {
+        Object.keys(localStorage).forEach(function (key) {
             if (key.indexOf(this.prefix) == 0)
                 delete localStorage[key];
         });
 
         localStorage[this.prefix + '__collapseAllTests'] = isCollapseAll.toString();
         this.updateCollapseAllState(resultsElement);
-        this.updateAllTests.forEach(function(update) { update(); });
+        this.updateAllTests.forEach(function (update) { update(); });
     }
 
-    updateCollapseAllState(resultsElement : HTMLElement) {
+    updateCollapseAllState(resultsElement: HTMLElement) {
         removeClass(resultsElement, 'is-collapsed-by-default');
         removeClass(resultsElement, 'is-expanded-by-default');
         addClass(resultsElement, this.areAllTestsCollapsed ? 'is-collapsed-by-default' : 'is-expanded-by-default');
     }
 
-    get areAllTestsCollapsed() : boolean {
+    get areAllTestsCollapsed(): boolean {
         return this.localStorage[this.prefix + '__collapseAllTests'] == true.toString();
     }
-    set areAllTestsCollapsed(value : boolean) {
+    set areAllTestsCollapsed(value: boolean) {
         this.localStorage[this.prefix + '__collapseAllTests'] = value.toString();
     }
 
-    testRender(testElement:HTMLElement, test:Test):void {
+    testRender(testElement: HTMLElement, test: Test): void {
         var expandCollapseIcon = prependElement(testElement, 'i', {
             className: 'basil-icon basil-button basil-expand-collapse-icon'
         });
@@ -195,7 +197,7 @@ class ExpandCollapsePlugin extends BaseTestPlugin implements BrowserPlugin {
         expandCollapseIcon.addEventListener('click', toggleCollapsed);
         this.updateAllTests.push(() => this.applyCollapsedState(testElement, expandCollapseIcon, test));
 
-        function toggleCollapsed () {
+        function toggleCollapsed() {
             if (key in localStorage)
                 delete localStorage[key];
             else
@@ -204,11 +206,11 @@ class ExpandCollapsePlugin extends BaseTestPlugin implements BrowserPlugin {
         }
     }
 
-    private collapseKey(test : Test) {
+    private collapseKey(test: Test) {
         return this.prefix + test.fullKey;
     }
 
-    private applyCollapsedState(testElement : HTMLElement, expandCollapseIcon : HTMLElement, test : Test) {
+    private applyCollapsedState(testElement: HTMLElement, expandCollapseIcon: HTMLElement, test: Test) {
         var key = this.collapseKey(test);
         var isCollapsed = key in localStorage
             ? localStorage[key] == 'true'
@@ -230,7 +232,7 @@ class ExpandCollapsePlugin extends BaseTestPlugin implements BrowserPlugin {
         }
     }
 
-    onComplete():void {
+    onComplete(): void {
     }
 }
 
@@ -241,10 +243,10 @@ class FavIconPlugin extends BaseTestPlugin implements BrowserPlugin {
     private runningPassedIcon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAIMSURBVBgZpcHNi05xGMfhz/07hzTDiKZmEmLYeM3iKTKUiFhY2EhZ2NjIBgsWYoUoSWr+B7NhY6GkJBRhYSMvJYRSFDPPi3N+9/01Z2Jvcl0mif9h+46PH92yrXXpe0f9EhCBIvBwFCIUyJ2QkDsewcDsuv3y5adTN67sHytbo61rs+b0p6E5zER/u+PXgLGyUyt1vk8yU91aiSmlXJw/uJKZOnzxPY1SChpVdgQohAcEIkJ4BJ6FZ+EKKhfLh+fh4TRKJBqWDJNQMmTCwkjJMEuYOVaIIhJlFo3ITiN5OI0EmBmWjCIZqTAsQZFgVlFw/tZuTt/cjIqaRnjQSAoxzYxGApIZKRlFYRQGKcGvXLF4cBXHxjdS5R4RTqOMcP4yM6ZJnLy+DSlTRabKmUULVrJqeCMTvTZ7x0ZYoKs0ylzXTDPDAEmYGTkqdq45hCvwcALx+cdH1i0eZbLq8qx7iPXnDswv5UGjAMQUM5Do5QpX8P7bG+rI5Kipvebnrwk2LNnKZN3h8bsH38qI4C8DjClm9HKP7JmhgaXkcFzBlx8fWDh3mOcfH/L47Qs6Tsv2HR8fH1qyaH+4Ex64OxHBz8Ej9KqKKip6uWLF4Go2jezi6YdH3H/1hGXdE7fvXD6zxyTxL9aeS+3W0u19917f/VQFOz5f0CummCT+xchZa3sUfd3wka8X9I4/fgON+TR7PCxMcAAAAABJRU5ErkJggg==';
     private runningFailedIcon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB90CBw0qMMQJoV8AAAIRSURBVDjLpZNPSFRRFMZ/575RLMsIJCU0UIwwN0EDVhYYQtjChYskaBH92UQrIYiI2lRSUC0E19FSiKBFELg1ixYt2khUSI4tFSxnnHnvnnNavBnbKl344HI4/M73ce8Rd+d/joxPzt48PVx8slbxVnfADDdDTXFzzA1XxdxxVdSMtuasvLj46/br5xMzheJQcbqppTV0tOxocGu5otPATKGSeaisbezY+mbmAaDg6jy61LdjwPXHP8kBbgCkUXHAzVEDwzFz1AyNnsuNVJ2ezr2oaQ6g/goSBHHHg+DiiAkhCCIBEUUSJ7FAIeb9FnNAaJACICJIEJIghESQAEmApiRhbuwCb8+O4kmWAzR3Htzq/0BkCxQkn54kQiIQAsQ0pb3/MG9OjhCrNawRoXGh7gAAd14Nj+HRsJgRY8b+vh46B49TLW8w0zuAXp3KATHLthwI4O6ICJZmDFy+iJtiquDOemmFrqFB0s0yx57d4OHUlX0Fr2dJAG9EcSemNdyU1W8/sJhhWYZmGbU/v+k+c4qsUmZpfn61YGb/ItSFCLFaRWOk7VAXphE3Y325xJ7OA5Tef+D7l88oWpTxydnZju6DE6aKqaGqmBknXtwiTWtYmhLTGu1H++k9N8LywgJfPy3w8drku7mn987j7tvSA9lVfjky6ncprNwhHGnUZbvrfF+ay5bIbtO0d8p9qVH/C58rTkV50AKSAAAAAElFTkSuQmCC';
 
-    private lastRenderTime : number = Date.now();
-    private anyHasFailed : boolean = false;
+    private lastRenderTime: number = Date.now();
+    private anyHasFailed: boolean = false;
 
-    setup(test:Test, go:TestFunction) {
+    setup(test: Test, go: TestFunction) {
         go();
 
         if (!this.anyHasFailed && test.isComplete && !test.hasPassed) {
@@ -253,19 +255,19 @@ class FavIconPlugin extends BaseTestPlugin implements BrowserPlugin {
         }
     }
 
-    pageRender(header:HTMLElement, results:HTMLElement):void {
+    pageRender(header: HTMLElement, results: HTMLElement): void {
         this.setFavIcon(this.runningPassedIcon);
     }
 
-    testRender(testElement:HTMLElement, test:Test):void {
+    testRender(testElement: HTMLElement, test: Test): void {
     }
 
-    onComplete():void {
+    onComplete(): void {
         this.setFavIcon(this.anyHasFailed ? this.failedIcon : this.passedIcon);
     }
 
-    private setFavIcon(base64 : string) {
-        var link : HTMLLinkElement = <HTMLLinkElement>document.getElementById('favIcon');
+    private setFavIcon(base64: string) {
+        var link: HTMLLinkElement = <HTMLLinkElement>document.getElementById('favIcon');
         if (!link) {
             link = document.createElement('link');
             link.id = 'favIcon';
@@ -288,15 +290,15 @@ class FavIconPlugin extends BaseTestPlugin implements BrowserPlugin {
 }
 
 class FilterPlugin extends BaseTestPlugin implements BrowserPlugin {
-    private filterForm:HTMLFormElement;
-    private filterInput:HTMLInputElement;
-    private testDepth : number = 0;
+    private filterForm: HTMLFormElement;
+    private filterInput: HTMLInputElement;
+    private testDepth: number = 0;
 
-    constructor(private testRunner:TestRunner, private location:Location) {
+    constructor(private testRunner: TestRunner, private location: Location) {
         super();
     }
 
-    test(test:Test, go:TestFunction) {
+    test(test: Test, go: TestFunction) {
         var testKey = test.key;
 
         var isPartialMatch = testKey.indexOf(this.filterParts[this.testDepth] || '') > -1;
@@ -313,7 +315,7 @@ class FilterPlugin extends BaseTestPlugin implements BrowserPlugin {
         this.testDepth--;
     }
 
-    pageRender(header:HTMLElement, results:HTMLElement):void {
+    pageRender(header: HTMLElement, results: HTMLElement): void {
         this.filterForm = <HTMLFormElement>appendElement(header, 'form', {
             className: 'basil-filter basil-header-section',
             action: location.href
@@ -332,7 +334,7 @@ class FilterPlugin extends BaseTestPlugin implements BrowserPlugin {
         this.filterForm.addEventListener('search', () => this.filterForm.submit());
     }
 
-    testRender(testElement:HTMLElement, test:Test):void {
+    testRender(testElement: HTMLElement, test: Test): void {
         var filterElement = appendElement(testElement, 'i', {
             className: 'basil-icon basil-button icon-filter',
             title: "Filter"
@@ -344,12 +346,12 @@ class FilterPlugin extends BaseTestPlugin implements BrowserPlugin {
         });
     }
 
-    onComplete():void {
+    onComplete(): void {
     }
 
-    private _filterParts : Array<string> = null;
+    private _filterParts: Array<string> = null;
 
-    private get filterParts() : Array<string> {
+    private get filterParts(): Array<string> {
         if (this._filterParts != null)
             return this._filterParts;
 
@@ -357,7 +359,7 @@ class FilterPlugin extends BaseTestPlugin implements BrowserPlugin {
             .toLowerCase()
             .split('>')
             .filter(Boolean)
-            .map(function(filterPart) { return filterPart.trim(); });
+            .map(function (filterPart) { return filterPart.trim(); });
     }
 
     private get currentFilter() {
@@ -378,18 +380,18 @@ class FilterPlugin extends BaseTestPlugin implements BrowserPlugin {
 }
 
 class FullTimingsPlugin extends BaseTestPlugin implements BrowserPlugin {
-    private timingElement : HTMLElement;
-    private timingFluid : HTMLElement;
-    private timingValue : HTMLElement;
-    private start : number;
-    private previous : number;
+    private timingElement: HTMLElement;
+    private timingFluid: HTMLElement;
+    private timingValue: HTMLElement;
+    private start: number;
+    private previous: number;
 
-    constructor(private storage : Storage, private location : Location, private getMs : () => number ) {
+    constructor(private storage: Storage, private location: Location, private getMs: () => number) {
         super();
         this.previous = parseInt(storage['basil-previous-timing-'] + location.href);
     }
 
-    pageRender(header:HTMLElement, results:HTMLElement):void {
+    pageRender(header: HTMLElement, results: HTMLElement): void {
         this.timingElement = document.createElement('span');
         this.timingElement.classList.add('basil-full-timing');
         this.timingElement.title = 'Previous: ' + this.timeString(this.previous);
@@ -406,39 +408,39 @@ class FullTimingsPlugin extends BaseTestPlugin implements BrowserPlugin {
         this.start = this.getMs();
     }
 
-    private timeString(ms : number) : string {
+    private timeString(ms: number): string {
         if (!ms)
             return 'Unknown';
 
         if (ms < 5000)
             return Math.floor(ms) + 'ms';
         else
-            return Math.floor(ms/1000) + 's';
+            return Math.floor(ms / 1000) + 's';
     }
 
-    testRender(testElement:HTMLElement, test:Test):void {
+    testRender(testElement: HTMLElement, test: Test): void {
     }
 
-    setup(test:Test, go:TestFunction) {
+    setup(test: Test, go: TestFunction) {
         go();
         this._updateTime();
     }
 
-    test(test:Test, go:TestFunction) {
+    test(test: Test, go: TestFunction) {
         go();
         this._updateTime();
     }
 
-    onComplete():void {
+    onComplete(): void {
         var elapsed = this.getMs() - this.start;
         this.elapsed = elapsed;
     }
 
-    set elapsed(value : number) {
+    set elapsed(value: number) {
         this.storage['basil-previous-timing-' + this.location.href] = value;
     }
 
-    _updateTime() : void {
+    _updateTime(): void {
         var elapsed = this.getMs() - this.start;
         this.elapsed = elapsed;
         addClass(this.timingElement, 'elapsed-time');
@@ -451,27 +453,27 @@ class FullTimingsPlugin extends BaseTestPlugin implements BrowserPlugin {
         this.timingValue.innerText = this.timeString(elapsed);
     }
 
-    fluidWidth(current : number) : string {
-        return (Math.floor(current*100 / this.previous)) + 'px';
+    fluidWidth(current: number): string {
+        return (Math.floor(current * 100 / this.previous)) + 'px';
     }
 }
 
 class HeaderStatePlugin extends BaseTestPlugin implements BrowserPlugin {
-    private headerElement : HTMLElement;
+    private headerElement: HTMLElement;
 
-    constructor(private testRunner : TestRunner) {
+    constructor(private testRunner: TestRunner) {
         super();
     }
 
-    pageRender(header:HTMLElement, results:HTMLElement):void {
+    pageRender(header: HTMLElement, results: HTMLElement): void {
         this.headerElement = header;
         addClass(header, 'is-running');
     }
 
-    testRender(testElement:HTMLElement, test:Test):void {
+    testRender(testElement: HTMLElement, test: Test): void {
     }
 
-    onComplete():void {
+    onComplete(): void {
         removeClass(this.headerElement, 'is-running');
         if (this.testRunner.failed.length > 0)
             addClass(this.headerElement, 'is-failed');
@@ -479,11 +481,11 @@ class HeaderStatePlugin extends BaseTestPlugin implements BrowserPlugin {
 }
 
 class HidePassedPlugin extends BaseTestPlugin implements BrowserPlugin {
-    constructor(private localStorage : Storage) {
+    constructor(private localStorage: Storage) {
         super();
     }
 
-    pageRender(header:HTMLElement, results:HTMLElement):void {
+    pageRender(header: HTMLElement, results: HTMLElement): void {
         var label = appendElement(header, 'label', { className: 'basil-hide-passed basil-header-section' });
 
         var checkbox = <HTMLInputElement>appendElement(label, 'input', {
@@ -497,7 +499,7 @@ class HidePassedPlugin extends BaseTestPlugin implements BrowserPlugin {
 
         checkbox.addEventListener('change', updateHidePassedState);
 
-        function updateHidePassedState () {
+        function updateHidePassedState() {
             this.shouldHidePassed = checkbox.checked;
 
             if (checkbox.checked)
@@ -507,21 +509,21 @@ class HidePassedPlugin extends BaseTestPlugin implements BrowserPlugin {
         }
     }
 
-    private get shouldHidePassed()  : boolean {
+    private get shouldHidePassed(): boolean {
         return this.localStorage['basil-hide-passed'] == true.toString;
     }
 
-    private set shouldHidePassed(value : boolean) {
+    private set shouldHidePassed(value: boolean) {
         this.localStorage['basil-hide-passed'] = value.toString;
     }
 
-    testRender(testElement:HTMLElement, test:Test):void {
+    testRender(testElement: HTMLElement, test: Test): void {
         addClass(testElement, test.hasPassed ? 'is-passed' : 'is-failed');
     }
 }
 
 class InspectPlugin extends BaseTestPlugin implements BrowserPlugin {
-    testRender(testElement:HTMLElement, test:Test):void {
+    testRender(testElement: HTMLElement, test: Test): void {
         if (!test.inspect)
             return;
 
@@ -535,15 +537,15 @@ class InspectPlugin extends BaseTestPlugin implements BrowserPlugin {
 }
 
 class PassedFailIconPlugin extends BaseTestPlugin implements BrowserPlugin {
-    testRender(testElement:HTMLElement, test:Test):void {
+    testRender(testElement: HTMLElement, test: Test): void {
         var icon = appendElement(testElement, 'i');
         icon.classList.add('basil-icon');
         icon.classList.add(test.hasPassed ? 'icon-ok' : 'icon-remove')
     }
 }
 
-class TestNamePlugin extends BaseTestPlugin implements BrowserPlugin {    
-    testRender(testElement:HTMLElement, test:Test):void {
+class TestNamePlugin extends BaseTestPlugin implements BrowserPlugin {
+    testRender(testElement: HTMLElement, test: Test): void {
         appendText(testElement, test.name);
     }
 }
@@ -574,8 +576,8 @@ class TimingsPlugin extends BaseTestPlugin implements BrowserPlugin {
     }
 }
 
-class ViewCodePlugin extends BaseTestPlugin implements BrowserPlugin { 
-    testRender(testElement:HTMLElement, test:Test):void {
+class ViewCodePlugin extends BaseTestPlugin implements BrowserPlugin {
+    testRender(testElement: HTMLElement, test: Test): void {
         if (!test.code)
             return;
 
@@ -599,7 +601,7 @@ class ViewCodePlugin extends BaseTestPlugin implements BrowserPlugin {
     }
 }
 
-export function plugins(testRunner: TestRunner, getTime: () => number, location : Location, storage : Storage): BrowserPlugin[] {
+export function plugins(testRunner: TestRunner, getTime: () => number, location: Location, storage: Storage): BrowserPlugin[] {
     return [
         new DomFixturePlugin(),
         new HeaderStatePlugin(testRunner),
