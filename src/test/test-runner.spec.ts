@@ -1,6 +1,6 @@
-/// <reference path="../typings/main.d.ts" />
-import { describe, when, then, it } from "../src/grebe";
-import * as grebe from "../src/grebe"
+/// <reference path="../../typings/main.d.ts" />
+import { describe, when, then, it } from "../grebe";
+import * as grebe from "../grebe"
 import * as sinon from "sinon";
 import { expect } from "chai";
 

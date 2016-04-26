@@ -4,11 +4,10 @@
         "module": "commonjs",
         "noImplicitAny": true,
         "declaration": true,
-        "allowUnreachableCode": true
+        "allowUnreachableCode": true,
+        "outDir": "../dist"
     },
     "compileOnSave": true,
     "exclude": [
-        "node_modules",
-        "typings"
     ]
 }

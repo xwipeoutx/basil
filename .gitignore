@@ -1,10 +1,2 @@
 node_modules
 typings
-**/*.js.map
-**/*.d.ts
-src/**/*.js
-test/**/*.js
-sample/**/*.js
-index.js
-index.d.ts
-

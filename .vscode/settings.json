@@ -4,10 +4,6 @@
         "**/.git": true,
         "**/.DS_Store": true,
         "**/*.js.map": true,
-        "{test,src,sample}/**/*.js": true,
-        "{test,src,sample}/**/*.d.ts": true,
-        "index.js":true,
-        "index.d.ts": true,
         "typings": true,
         "node_modules": true,
         "dist": true

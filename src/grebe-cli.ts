@@ -1,5 +1,5 @@
-import * as grebe from "./src/grebe";
-import { NodeTestReporter } from "./src/node-reporter";
+import * as grebe from "./grebe";
+import { NodeTestReporter } from "./node-reporter";
 import * as program from "commander"
 import * as glob from "glob";
 
@@ -27,7 +27,7 @@ var initial: string[] = [];
 var files = globs.reduce((result, pattern) => result.concat(glob.sync(pattern, globOptions)), initial);
 
 var reporter = new NodeTestReporter(grebe.events, reporterOptions);
-files.forEach(f => require('./' + f));
+files.forEach(f => require('./../' + f));
 
 reporter.writeSummary();
 

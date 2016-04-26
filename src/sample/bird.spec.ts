@@ -1,5 +1,5 @@
 // Grebe imports
-import { describe, when, then, it } from "../src/grebe";
+import { describe, when, then, it } from "../grebe";
 
 // third-party imports for assertions and mocking
 import { expect, should } from "chai";
