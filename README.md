@@ -9,7 +9,7 @@ See, a problem with writing unit tests is that setup is hard.  Very hard. Unless
 
 Basil fixes this, allowing hierarchical and inline test setup without sacrificing readability.
 
-Don't believe me? See a [sample test](http://stevesspace.com/projects/basil/samples/sample-test.html) for yourself. Or see the [handy debug](http://stevesspace.com/projects/basil/samples/sample-output-test.html) features for when tests fail
+Don't believe me? See a [sample test](http://stevesspace.com/projects/basil/docs/samples/sample-test.html) for yourself. Or see the [handy debug](http://stevesspace.com/projects/basil/docs/samples/sample-output-test.html) features for when tests fail
 
 Features:
 
