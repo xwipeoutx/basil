@@ -3,7 +3,7 @@
 import * as cliColor from "cli-color";
 import * as minimist from "minimist";
 var Liftoff = require("liftoff");
-var cliPackage = require('../../package');
+var cliPackage = require('../package');
 
 var argv = minimist(process.argv.slice(2));
 
