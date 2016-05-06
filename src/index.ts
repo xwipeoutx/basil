@@ -25,7 +25,7 @@ export function options(value: ReporterOptions) {
     reporterOptions = value;
 }
 
-export function run(globs: string[] | string, reporterOptions: ReporterOptions) {
+export function run(reporterOptions: ReporterOptions) {
     var reporter = new NodeTestReporter(events, reporterOptions);
     testFiles.forEach(f => {
         require(f);

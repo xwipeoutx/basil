@@ -1,6 +1,6 @@
 {
   "name": "grebe",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Unit test runner with infinitely nested test setup",
   "keywords": [
     "grebe",
@@ -13,15 +13,15 @@
     "type": "git",
     "url": "https://github.com/xwipeoutx/grebe-js"
   },
-  "main": "./src/index.js",
+  "main": "./index.js",
   "bin": {
-    "grebe": "./src/bin/grebe.js"
+    "grebe": "./bin/grebe.js"
   },
   "scripts": {
     "build": "tsc -p src",
-    "test2": "grebe dist/sample/**/*.spec.js",
-    "test": "node dist/grebe-cli.js dist/test/**/*.spec.js",
-    "sample": "node dist/grebe-cli.js dist/sample/**/*.spec.js"
+    "test": "node dist/runTests",
+    "clean": "rmdir /Q /S .\\dist",
+    "prepare-publish": "rmdir /Q /S .\\dist && tsc -p src && copy package.json .\\dist && copy LICENSE .\\dist && copy README.md .\\dist && copy typings.json .\\dist && copy jsconfig.json .\\dist"
   },
   "author": "Steve Leigh (xwipeoutx@gmail.com)",
   "license": "ISC",
