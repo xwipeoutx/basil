@@ -1,71 +1,56 @@
+"use strict";
 // Grebe imports
-import { describe, when, then, it } from "../spec";
+var spec_1 = require("../spec");
 //import { describe, when, then, it } from "grebe/spec"; // Use this instead when not bootstrapping
-
 // third-party imports for assertions and mocking
-import { expect, should } from "chai";
-import * as sinon from "sinon";
-should(); // setup Object.prototype.should
-
+var chai_1 = require("chai");
+var sinon = require("sinon");
+chai_1.should(); // setup Object.prototype.should
 // Test-specific imports
-import { Bird } from "./bird";
-
-describe("Bird", () => {
+var bird_1 = require("./bird");
+spec_1.describe("Bird", function () {
     // sinon override for Date, setTimeout etc.
     var clock = sinon.useFakeTimers();
-
     // sut stands for "System Under Test"
-    var sut = new Bird(); 
-
+    var sut = new bird_1.Bird();
     // initial state assertions
-    it("has 2 legs", () => {
+    spec_1.it("has 2 legs", function () {
         sut.numLegs.should.equal(2);
     });
-
-    it("has 2 wings", () => {
+    spec_1.it("has 2 wings", function () {
         sut.numWings.should.equal(2);
     });
-
-    it("starts on ground", () => {
+    spec_1.it("starts on ground", function () {
         sut.isFlying.should.be.false;
     });
-
     // when = perform an action
-    when("flapping wings", () => {
+    spec_1.when("flapping wings", function () {
         sut.flap();
-
         // assertions at any level
-        it("is not yet flying", () => {
+        spec_1.it("is not yet flying", function () {
             sut.isFlying.should.be.false;
         });
-
         // nest as far as you want
-        when("1s passes", () => {
+        spec_1.when("1s passes", function () {
             clock.tick(1000);
-
-            it("is flying", () => {
+            spec_1.it("is flying", function () {
                 sut.isFlying.should.be.true;
             });
-            
             // keep nesting...
-            when("it hits a tree", () => {
+            spec_1.when("it hits a tree", function () {
                 sut.hitTree();
-                
-                it("is not flying", () => {
+                spec_1.it("is not flying", function () {
                     sut.isFlying.should.be.false;
                 });
-                
-                it("loses wings", () => {
+                spec_1.it("loses wings", function () {
                     sut.numWings.should.equal(0);
-                })
-                
-                it("cannot fly again", () => {
-                    expect(() => sut.flap()).to.throw("Wings are broken, cannot fly");
+                });
+                spec_1.it("cannot fly again", function () {
+                    chai_1.expect(function () { return sut.flap(); }).to.throw("Wings are broken, cannot fly");
                 });
             });
         });
     });
-    
     // cleanup code run after every test, regardless of exceptions.  
     // In this case, restore the sinon clock.
     clock.restore();

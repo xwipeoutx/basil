@@ -1,6 +1,6 @@
 {
   "name": "grebe",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Unit test runner with infinitely nested test setup",
   "keywords": [
     "grebe",
@@ -13,12 +13,13 @@
     "type": "git",
     "url": "https://github.com/xwipeoutx/grebe-js"
   },
-  "main": "index.js",
+  "main": "./src/index.js",
   "bin": {
-    "grebe": "./bin/grebe"
+    "grebe": "./src/bin/grebe.js"
   },
   "scripts": {
     "build": "tsc -p src",
+    "test2": "grebe dist/sample/**/*.spec.js",
     "test": "node dist/grebe-cli.js dist/test/**/*.spec.js",
     "sample": "node dist/grebe-cli.js dist/sample/**/*.spec.js"
   },
@@ -32,6 +33,8 @@
   "dependencies": {
     "cli-color": "^1.1.0",
     "commander": "^2.9.0",
-    "glob": "^7.0.3"
+    "glob": "^7.0.3",
+    "liftoff": "^2.2.1",
+    "minimist": "^1.2.0"
   }
 }

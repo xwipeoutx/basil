@@ -23,6 +23,7 @@ export class TestRunner {
     private _leafTest: Test = null;
 
     constructor(private events: TestEvents) {
+        
     }
 
     abort(): void {
@@ -32,6 +33,7 @@ export class TestRunner {
     runTest(name: string, fn: TestFunction): Test {
         if (this._aborted)
             return null;
+            
         var test = this._createTest(name);
 
         if (this._outerTest)
@@ -209,6 +211,7 @@ export class Test {
 export class EventStream<T> {
     private callbacks: ((event: T) => void)[] = []
     subscribe(callback: (event: T) => void) {
+        
         this.callbacks.push(callback);
     }
 
@@ -227,15 +230,3 @@ export class TestEvents {
 
     leafComplete = new EventStream<Test>();
 }
-
-export var events = new TestEvents();
-export var testRunner = new TestRunner(events);
-
-export function test(name: string, fn: TestFunction) {
-    testRunner.runTest(name, fn);
-}
-
-export var describe = test;
-export var when = test;
-export var then = test;
-export var it = test;

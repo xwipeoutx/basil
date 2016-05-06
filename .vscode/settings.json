@@ -6,7 +6,9 @@
         "**/*.js.map": true,
         "typings": true,
         "node_modules": true,
-        "dist": true
+        "dist": true,
+        "src/**/*.js": true,
+        "src/**/*.d.ts": true
     },
     "editor.folding": true
 }

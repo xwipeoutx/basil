@@ -1,9 +1,9 @@
-import { describe, when, then, it } from "../grebe";
+import { describe, when, then, it } from "../spec";
+//import { describe, when, then, it } from "grebe/spec"; // Use this instead when not bootstrapping
 import { expect, should } from "chai";
 import * as sinon from "sinon";
 
 should();
-
 describe("Assertions", () => {
     it("Works with chai", () => {
         "runsOnChai".should.not.be.false;

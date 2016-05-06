@@ -1,12 +1,12 @@
 /// <reference path="../../typings/main.d.ts" />
-import { describe, when, then, it } from "../grebe";
-import * as grebe from "../grebe"
+import { describe, when, then, it } from "../spec";
+import { TestEvents, TestRunner, Test }  from "../runner"
 import * as sinon from "sinon";
 import { expect } from "chai";
 
 describe("TestRunner", () => {
-    var testEvents = new grebe.TestEvents();
-    var sut = new grebe.TestRunner(testEvents);
+    var testEvents = new TestEvents();
+    var sut = new TestRunner(testEvents);
 
     when("running a test", () => {
         var testFn = sinon.spy();
@@ -47,7 +47,7 @@ describe("TestRunner", () => {
         });
 
         when("running a test method with an inner test method call", () => {
-            var innerResult: grebe.Test;
+            var innerResult: Test;
             var innerTestFunction = sinon.stub();
             var testFunction = sinon.spy(() => {
                 innerResult = sut.runTest("Inner Test", innerTestFunction);
@@ -65,7 +65,7 @@ describe("TestRunner", () => {
         });
 
         when("running a test method with 2 inner test method calls", () => {
-            var innerResult: grebe.Test, innerResult2: grebe.Test;
+            var innerResult: Test, innerResult2: Test;
             var innerFunction1 = sinon.stub();
             var innerFunction2 = sinon.stub();
             var testFunction = sinon.spy(() => {
@@ -80,7 +80,7 @@ describe("TestRunner", () => {
         });
 
         when("running a test method with 3 inner test method calls", () => {
-            var innerResult: grebe.Test, innerResult2: grebe.Test, innerResult3: grebe.Test;
+            var innerResult: Test, innerResult2: Test, innerResult3: Test;
             var result = sut.runTest("Outer Test", () => {
                 innerResult = sut.runTest("Inner Test", () => { });
                 innerResult2 = sut.runTest("Inner Test 2", () => { });
@@ -93,7 +93,7 @@ describe("TestRunner", () => {
         });
 
         when("running a test method with a double nested test method call", () => {
-            var innerResult: grebe.Test, innerInnerResult: grebe.Test, innerInnerResult2: grebe.Test;
+            var innerResult: Test, innerInnerResult: Test, innerInnerResult2: Test;
             var result = sut.runTest("Outer Test", () => {
                 innerResult = sut.runTest("Inner Test", () => {
                     innerInnerResult = sut.runTest("Inner Inner Test", () => { });
@@ -109,7 +109,7 @@ describe("TestRunner", () => {
     });
 
     describe("event raising", () => {
-        var allCalls: { functionName: string, test?: grebe.Test }[] = [];
+        var allCalls: { functionName: string, test?: Test }[] = [];
 
         testEvents.rootStarted.subscribe(t => allCalls.push({ functionName: "rootStarted", test: t }));
         testEvents.rootComplete.subscribe(t => allCalls.push({ functionName: "rootComplete", test: t }));
@@ -172,7 +172,7 @@ describe("TestRunner", () => {
 });
 
 describe("Test", () => {
-    var sut = new grebe.Test("Test Name", null);
+    var sut = new Test("Test Name", null);
 
     it("has correct name", () => { expect(sut.name).to.equal("Test Name"); });
     it("is not complete", () => { expect(sut.isComplete).to.be.false; });

@@ -1,5 +1,4 @@
-/// <reference path="../typings/main.d.ts" />
-import * as grebe from "./grebe";
+import { TestEvents, Test } from "./runner";
 import * as col from "cli-color"
 
 export interface TestReporterOptions {
@@ -16,7 +15,7 @@ export class NodeTestReporter {
     private depths: { [key: string]: number } = {};
     private depth = 1;
 
-    constructor(private testEvents: grebe.TestEvents, private options: TestReporterOptions = {}) {
+    constructor(private testEvents: TestEvents, private options: TestReporterOptions = {}) {
         testEvents.leafComplete.subscribe(test => {
             this.numTests++;
             if (test.hasPassed)
@@ -24,7 +23,7 @@ export class NodeTestReporter {
             else
                 this.numFailed++;
         });
-
+        
         if (!options.quiet) {
             testEvents.nodeEntered.subscribe(test => this.depth++);
             testEvents.nodeExited.subscribe(test => this.depth--);
@@ -32,7 +31,7 @@ export class NodeTestReporter {
         }
     }
 
-    private writeStatus(test: grebe.Test, depth: number) {
+    private writeStatus(test: Test, depth: number) {
         var color = test.hasPassed ? col.green : col.red;
         var indicator = test.hasPassed ? "√" : "×";
 

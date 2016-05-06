@@ -5,7 +5,7 @@
         "noImplicitAny": true,
         "declaration": true,
         "allowUnreachableCode": true,
-        "outDir": "../dist"
+        "moduleResolution": "node"
     },
     "compileOnSave": true,
     "exclude": [
