@@ -19,7 +19,8 @@
   },
   "scripts": {
     "build": "tsc -p src",
-    "test": "node dist/runTests",
+    "test": "node dist/bin/grebe.js --config=dist/grebe.test.js",
+    "sample": "node dist/bin/grebe.js --config=dist/grebe.sample.js",
     "clean": "rmdir /Q /S .\\dist",
     "prepare-publish": "rmdir /Q /S .\\dist && tsc -p src && copy package.json .\\dist && copy LICENSE .\\dist && copy README.md .\\dist && copy typings.json .\\dist && copy jsconfig.json .\\dist"
   },
@@ -34,7 +35,6 @@
     "cli-color": "^1.1.0",
     "commander": "^2.9.0",
     "glob": "^7.0.3",
-    "liftoff": "^2.2.1",
-    "minimist": "^1.2.0"
+    "liftoff": "^2.2.1"
   }
 }

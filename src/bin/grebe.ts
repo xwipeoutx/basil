@@ -1,14 +1,22 @@
 #!/usr/bin/env node
+import { ReporterOptions } from "../index";
 
 import * as cliColor from "cli-color";
-import * as minimist from "minimist";
+import * as commander from "commander";
 var Liftoff = require("liftoff");
 var cliPackage = require('../package');
 
-var argv = minimist(process.argv.slice(2));
+commander
+    .option("-c, --config [configFile]", "Config file")    
+    .parse(process.argv);
+
+var args : {
+    config: string
+} = <any>commander;
 
 var cli = new Liftoff({
     name: 'grebe',
+    configName: 'grebe',    
     extensions: {
         ".js": null
     }
@@ -29,17 +37,22 @@ cli.on('respawn', function (flags: any, child: any) {
     console.log('Respawned to PID:', pid);
 });
 
-cli.launch({}, invoke);
+cli.launch({
+    configPath: args.config
+}, invoke);
 
 function invoke(env: any) {
     console.log("global grebe is: " + cliPackage.version);
     console.log(" local grebe is: " + env.modulePackage.version);
 
     if (!env.configPath)
-        throw new Error("grebefile not foudn");
+        throw new Error("grebefile not found");
 
     require(env.configPath);
-
-    var grebeInstance = require(env.modulePath);
-    grebeInstance.run();
+    
+    var instance = require(env.modulePath);
+    
+    var options: ReporterOptions = {
+    };
+    instance.run(options);
 }
