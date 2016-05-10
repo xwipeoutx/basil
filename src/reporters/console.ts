@@ -1,13 +1,13 @@
-import { TestEvents, Test } from "./runner";
-import { Reporter, reporter } from "./index";
+import { TestEvents, Test } from "../runner";
+import { Reporter } from "../index";
 import * as col from "cli-color"
 
-export interface NodeReporterOptions {
+export interface ConsoleReporterOptions {
     showTree?: boolean
     hideStack?: boolean
 }
 
-export class NodeReporter implements Reporter {
+export class ConsoleReporter implements Reporter {
     private numTests: number = 0
     private numPassed: number = 0
     private numFailed: number = 0
@@ -15,7 +15,7 @@ export class NodeReporter implements Reporter {
     private depths: { [key: string]: number } = {};
     private depth = 1;
 
-    constructor(private options: NodeReporterOptions = {}) {
+    constructor(private options: ConsoleReporterOptions = {}) {
     }
 
     connect(testEvents: TestEvents) {

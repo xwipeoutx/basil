@@ -1,26 +1,28 @@
-import { TestEvents } from "./runner";
-import { events, testRunner } from "./spec";
-import { NodeReporter } from "./node-reporter";
+import { TestEvents, TestRunner } from "./runner";
+import { RunThenExitStrategy } from "./strategies/run-then-exit";
+import { CompositeReporter } from "./reporters/composite";
+import { glebeSingleton } from "./singleton";
 import * as glob from "glob";
-
-export interface ReporterOptions {
-    quiet?: boolean,
-    showTree?: boolean,
-    hideStack?: boolean
-}
 
 export interface Reporter {
     connect(events: TestEvents): void
     complete(): void
 }
 
-var specFiles: string[] = [];
-var reporters: Reporter[] = [];
+export interface Strategy {
+    run(reporter: Reporter, testRunner: TestRunner, events: TestEvents, specFiles: string[]): void
+}
 
-var reporterOptions: ReporterOptions = {};
+var specFiles: string[] = [];
+var compositeReporter = new CompositeReporter();
+var currentStrategy = new RunThenExitStrategy();
 
 export function reporter(reporter: Reporter) {
-    reporters.push(reporter);
+    compositeReporter.add(reporter);
+}
+
+export function strategy(strategy: Strategy) {
+    currentStrategy = strategy;
 }
 
 export function spec(globs: string[] | string) {
@@ -34,13 +36,5 @@ export function spec(globs: string[] | string) {
 }
 
 export function run() {
-    reporters.forEach(r => r.connect(events));
-    specFiles.forEach(specFile => require(specFile));
-    reporters.forEach(r => r.complete());
-    
-    if (testRunner.failed.length > 0) {
-        process.exit(2);
-    } else {
-        process.exit(0);
-    }
+    currentStrategy.run(compositeReporter, glebeSingleton.testRunner, glebeSingleton.events, specFiles);
 }

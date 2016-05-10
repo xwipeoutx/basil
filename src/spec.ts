@@ -1,33 +1,10 @@
-import {TestEvents, TestRunner, TestFunction} from "./runner"
-
-interface GlebeGlobals {
-    testRunner?: TestRunner,
-    events?: TestEvents
-}
-
-function getGlebeSingleton(): GlebeGlobals {
-
-    var top: { __glebeGlobals: GlebeGlobals } = <any>global;
-
-    if (top.__glebeGlobals)
-        return top.__glebeGlobals;
-
-    var events = new TestEvents();
-    var testRunner = new TestRunner(events);
-
-    top.__glebeGlobals = {
-        events: events,
-        testRunner: testRunner
-    };
-    return top.__glebeGlobals;
-}
-
-var glebeSingleton = getGlebeSingleton();
+import { TestEvents, TestRunner } from "./runner"
+import { glebeSingleton } from "./singleton"
 
 export var events = glebeSingleton.events;
 export var testRunner = glebeSingleton.testRunner;
 
-export function test(name: string, fn: TestFunction) {
+export function test(name: string, fn: Function) {
     testRunner.runTest(name, fn);
 }
 

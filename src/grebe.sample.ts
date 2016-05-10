@@ -1,7 +1,7 @@
 import * as grebe from "./index";
-import { NodeReporter } from "./node-reporter"
+import { ConsoleReporter } from "./reporters/console"
 
-grebe.reporter(new NodeReporter({
+grebe.reporter(new ConsoleReporter({
     hideStack: true,
     showTree: true
 }))

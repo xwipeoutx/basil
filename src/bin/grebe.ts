@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-import { ReporterOptions } from "../index";
-
 import * as cliColor from "cli-color";
 import * as commander from "commander";
 var Liftoff = require("liftoff");
@@ -51,8 +49,5 @@ function invoke(env: any) {
     require(env.configPath);
     
     var instance = require(env.modulePath);
-    
-    var options: ReporterOptions = {
-    };
-    instance.run(options);
+    instance.run();
 }

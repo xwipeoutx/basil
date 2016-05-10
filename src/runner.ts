@@ -1,20 +1,3 @@
-export class PluginDidNotDelegateError {
-    public message: string = "A registered plugin did not delegate";
-}
-
-export interface TestPlugin {
-    setup(test: Test, go: TestFunction): void
-    test(test: Test, go: TestFunction): void
-}
-
-export interface TestFunction {
-    (): void
-}
-
-interface PluginFunction {
-    (test: Test, go: TestFunction): void
-}
-
 export class TestRunner {
     private _testQueue: Test[] = [];
     private _rootTests: Test[] = [];
@@ -22,15 +5,14 @@ export class TestRunner {
     private _outerTest: Test = null;
     private _leafTest: Test = null;
 
-    constructor(private events: TestEvents) {
-        
+    constructor(private events: TestEvents) {        
     }
 
     abort(): void {
         this._aborted = true;
     }
 
-    runTest(name: string, fn: TestFunction): Test {
+    runTest(name: string, fn: Function): Test {
         if (this._aborted)
             return null;
             
@@ -57,7 +39,7 @@ export class TestRunner {
         return test;
     }
 
-    _startRun(test: Test, testFunction: TestFunction): void {
+    _startRun(test: Test, testFunction: Function): void {
         this._rootTests.push(test);
         this.events.rootStarted.next(test);
 
@@ -70,14 +52,14 @@ export class TestRunner {
         this.events.rootComplete.next(test);
     }
 
-    _continueRun(test: Test, testFunction: TestFunction): void {
+    _continueRun(test: Test, testFunction: Function): void {
         if (test.isComplete || this._leafTest != null)
             return;
 
         this._runTestFunction(test, testFunction);
     }
 
-    _runTestFunction(test: Test, testFunction: TestFunction) {
+    _runTestFunction(test: Test, testFunction: Function) {
         var outerTest = this._outerTest;
         this._outerTest = test;
 
@@ -116,7 +98,7 @@ export class Test {
     private _error: Error = null;
     private _skipped: boolean = false;
     private _isComplete: boolean = false;
-    private _inspect: () => void = null;
+    private _inspect: Function = null;
 
     isDiscovered = false;
 
@@ -145,7 +127,7 @@ export class Test {
                 && this.children.every(child => child.isComplete));
     }
 
-    run(fn: () => void): void {
+    run(fn: Function): void {
         if (this._skipped)
             return;
 
