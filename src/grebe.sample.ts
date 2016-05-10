@@ -1,3 +1,9 @@
 import * as grebe from "./index";
+import { NodeReporter } from "./node-reporter"
 
-grebe.test("dist/sample/*.spec.js");
+grebe.reporter(new NodeReporter({
+    hideStack: true,
+    showTree: true
+}))
+
+grebe.spec("dist/sample/*.spec.js");

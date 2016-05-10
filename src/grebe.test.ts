@@ -1,3 +1,5 @@
 import * as grebe from "./index";
+import { NodeReporter } from "./node-reporter"
 
-grebe.test("dist/test/*.spec.js");
+grebe.reporter(new NodeReporter())
+grebe.spec("dist/test/*.spec.js");

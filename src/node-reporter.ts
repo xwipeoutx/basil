@@ -1,13 +1,13 @@
 import { TestEvents, Test } from "./runner";
+import { Reporter, reporter } from "./index";
 import * as col from "cli-color"
 
-export interface TestReporterOptions {
-    quiet?: boolean
+export interface NodeReporterOptions {
     showTree?: boolean
     hideStack?: boolean
 }
 
-export class NodeTestReporter {
+export class NodeReporter implements Reporter {
     private numTests: number = 0
     private numPassed: number = 0
     private numFailed: number = 0
@@ -15,7 +15,10 @@ export class NodeTestReporter {
     private depths: { [key: string]: number } = {};
     private depth = 1;
 
-    constructor(private testEvents: TestEvents, private options: TestReporterOptions = {}) {
+    constructor(private options: NodeReporterOptions = {}) {
+    }
+
+    connect(testEvents: TestEvents) {
         testEvents.leafComplete.subscribe(test => {
             this.numTests++;
             if (test.hasPassed)
@@ -23,12 +26,10 @@ export class NodeTestReporter {
             else
                 this.numFailed++;
         });
-        
-        if (!options.quiet) {
-            testEvents.nodeEntered.subscribe(test => this.depth++);
-            testEvents.nodeExited.subscribe(test => this.depth--);
-            testEvents.rootComplete.subscribe(test => this.writeStatus(test, this.depth));
-        }
+
+        testEvents.nodeEntered.subscribe(test => this.depth++);
+        testEvents.nodeExited.subscribe(test => this.depth--);
+        testEvents.rootComplete.subscribe(test => this.writeStatus(test, this.depth));
     }
 
     private writeStatus(test: Test, depth: number) {
@@ -53,12 +54,7 @@ export class NodeTestReporter {
         return new Array(numSpaces + 1).join("  ")
     }
 
-    get hasErrors() { return this.numFailed > 0 || this.numTests == 0; }
-
-    writeSummary() {
-        if (this.options.quiet)
-            return;
-
+    complete() {
         console.log();
         if (this.numFailed > 0) {
             console.log(col.red("Test run Failed"));
