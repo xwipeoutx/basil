@@ -14,7 +14,6 @@ var args : {
 
 var cli = new Liftoff({
     name: 'grebe',
-    configName: 'grebe',    
     extensions: {
         ".js": null
     }
@@ -44,7 +43,7 @@ function invoke(env: any) {
     console.log(" local grebe is: " + env.modulePackage.version);
 
     if (!env.configPath)
-        throw new Error("grebefile not found");
+        throw new Error("grebefile not found. Please use --config or put grebefile.js in the project directory");
 
     require(env.configPath);
     

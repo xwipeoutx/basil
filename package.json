@@ -1,6 +1,6 @@
 {
   "name": "grebe",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Unit test runner with infinitely nested test setup",
   "keywords": [
     "grebe",
